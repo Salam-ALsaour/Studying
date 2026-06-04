@@ -45,7 +45,7 @@
   html{scroll-behavior:smooth;}
   body{
     margin:0;font-family:var(--sans);color:var(--ink);
-    background:var(--paper);line-height:1.62;font-size:16px;
+    background:var(--paper);line-height:1.8;font-size:18px;letter-spacing:.1px;
     -webkit-font-smoothing:antialiased;
   }
 
@@ -117,7 +117,7 @@
   .theme-btn{background:var(--paper-card);border:1px solid var(--line);border-radius:9px;
     padding:8px 14px;cursor:pointer;color:var(--ink);font-size:13px;}
 
-  .wrap{max-width:920px;margin:0 auto;padding:34px 30px 0;}
+  .wrap{max-width:none;margin:0;padding:36px 56px 0;}
 
   /* hero */
   .hero{margin-bottom:30px;padding:30px 32px;border-radius:var(--radius);
@@ -138,13 +138,23 @@
   .ch-head{border-bottom:2px solid var(--line);padding-bottom:14px;margin-bottom:24px;}
   .ch-head .kicker{font-size:11.5px;letter-spacing:2px;text-transform:uppercase;
     color:var(--teal);font-weight:700;}
-  .ch-head h2{font-family:var(--serif);font-size:27px;margin:6px 0 4px;line-height:1.22;}
+  .ch-head h2{font-family:var(--serif);font-size:33px;margin:6px 0 4px;line-height:1.22;}
   .ch-head .ref{font-size:12.5px;color:var(--ink-soft);font-style:italic;}
 
-  h3{font-family:var(--serif);font-size:21px;margin:34px 0 12px;color:var(--ink);
-    padding-left:14px;border-left:4px solid var(--gold);}
-  h4{font-size:16px;margin:22px 0 8px;color:var(--teal);}
-  p{margin:11px 0;}
+  h3{font-family:var(--serif);font-size:25px;margin:36px 0 14px;color:var(--ink);
+    padding-left:16px;border-left:4px solid var(--gold);}
+  /* collapsible lesson sections */
+  h3.collapse-head{cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+    gap:14px;user-select:none;transition:color .15s,background .15s;border-left-width:5px;
+    padding:8px 12px 8px 16px;border-radius:0 10px 10px 0;}
+  h3.collapse-head:hover{color:var(--teal);background:var(--teal-soft);}
+  h3.collapse-head::after{content:"\25BE";font-size:18px;color:var(--gold);
+    transition:transform .2s;flex:0 0 auto;}
+  h3.collapse-head.collapsed::after{transform:rotate(-90deg);}
+  .collapse-body{overflow:hidden;}
+  .collapse-body.hidden{display:none;}
+  h4{font-size:19px;margin:24px 0 9px;color:var(--teal);}
+  p{margin:13px 0;}
   ul,ol{margin:10px 0 14px;padding-left:24px;}
   li{margin:5px 0;}
   strong{color:var(--ink);}
@@ -152,8 +162,8 @@
     color:var(--teal);padding:1px 6px;border-radius:5px;font-weight:600;}
 
   /* Arabic explanation block */
-  .ar{direction:rtl;text-align:right;font-family:var(--arabic);font-size:16.5px;
-    line-height:2;color:var(--ink-soft);background:var(--paper-card);
+  .ar{direction:rtl;text-align:right;font-family:var(--arabic);font-size:19px;
+    line-height:2.15;color:var(--ink-soft);background:var(--paper-card);
     border-radius:12px;padding:14px 18px;margin:12px 0;border:1px solid var(--line);
     border-right:4px solid var(--teal);}
   .ar b,.ar strong{color:var(--ink);}
@@ -174,7 +184,7 @@
   .callout.warn .label{color:var(--danger);}
 
   /* tables */
-  table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px;
+  table{border-collapse:collapse;width:100%;margin:16px 0;font-size:16px;
     background:var(--paper-card);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);}
   th,td{padding:10px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;}
   th{background:var(--navy);color:#fff;font-size:12.5px;letter-spacing:.4px;}
@@ -183,7 +193,7 @@
 
   /* code */
   pre{background:#0c1622;color:#e3ecf7;padding:15px 18px;border-radius:11px;overflow-x:auto;
-    font-family:var(--mono);font-size:13.5px;line-height:1.6;margin:14px 0;}
+    font-family:var(--mono);font-size:15px;line-height:1.7;margin:14px 0;}
   code{font-family:var(--mono);}
   .kw{color:#e0b94a;} .str{color:#7fd1a0;} .cmt{color:#6f84a0;font-style:italic;}
 
@@ -191,11 +201,13 @@
     font-weight:700;padding:3px 10px;border-radius:20px;margin:2px 4px 2px 0;}
 
   /* responsive */
+  @media(max-width:1200px){ .wrap{padding:32px 36px 0;} }
   @media(max-width:880px){
     .sidebar{position:fixed;left:-320px;z-index:60;transition:left .25s;box-shadow:0 0 40px rgba(0,0,0,.4);}
     .sidebar.open{left:0;}
     .menu-toggle{display:grid;place-items:center;}
     .wrap{padding:24px 18px 0;}
+    body{font-size:17px;}
   }
 </style>
 </head>
@@ -2087,10 +2099,31 @@ HAVING COUNT(emp_id) > 2;</pre>
         menuToggle.addEventListener('click', function () { sidebar.classList.toggle('open'); });
       }
 
+      // Collapsible sections: group each H3 with the content that follows it
+      chapters.forEach(function (chapter) {
+        var heads = Array.prototype.slice.call(chapter.querySelectorAll('h3'));
+        heads.forEach(function (h3) {
+          var body = document.createElement('div');
+          body.className = 'collapse-body';
+          var node = h3.nextElementSibling;
+          while (node && node.tagName !== 'H3') {
+            var nxt = node.nextElementSibling;
+            body.appendChild(node);
+            node = nxt;
+          }
+          h3.parentNode.insertBefore(body, h3.nextSibling);
+          h3.classList.add('collapse-head');
+          h3.setAttribute('title', 'انقر للطي أو الفتح · Click to collapse / expand');
+          h3.addEventListener('click', function () {
+            h3.classList.toggle('collapsed');
+            body.classList.toggle('hidden');
+          });
+        });
+      });
+
       // Start on Chapter 1
       show('ch1');
     })();
   </script>
 </body>
 </html>
-
