@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIS 235 — Database Concepts &amp; Design | Study Companion</title>
+<style>
+  /* ===================== DESIGN TOKENS ===================== */
+  :root{
+    --ink:#16202e;            /* main text */
+    --ink-soft:#3c4a5e;
+    --paper:#fbfaf6;          /* warm content background */
+    --paper-card:#ffffff;
+    --navy:#0f2238;           /* sidebar */
+    --navy-2:#163150;
+    --gold:#c8a02a;           /* signature accent */
+    --gold-soft:#e7d597;
+    --teal:#117a73;
+    --teal-soft:#e3f1ef;
+    --danger:#b23b3b;
+    --danger-soft:#f7e7e6;
+    --line:#e6e1d4;
+    --shadow:0 1px 2px rgba(16,32,56,.06),0 8px 24px rgba(16,32,56,.07);
+    --radius:14px;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --sans:"Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    --arabic:"Segoe UI","Tahoma","Geeza Pro","Noto Naskh Arabic",sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  html[data-theme="dark"]{
+    --ink:#e8edf4;
+    --ink-soft:#a9b6c6;
+    --paper:#0c1622;
+    --paper-card:#13202f;
+    --navy:#081320;
+    --navy-2:#10243b;
+    --gold:#e0b94a;
+    --line:#23344a;
+    --teal-soft:#0e2b29;
+    --danger-soft:#33201f;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.45);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;font-family:var(--sans);color:var(--ink);
+    background:var(--paper);line-height:1.62;font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===================== SIDEBAR ===================== */
+  .layout{display:flex;min-height:100vh;}
+  .sidebar{
+    width:312px;flex:0 0 312px;background:var(--navy);color:#dfe7f1;
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+    border-right:1px solid rgba(255,255,255,.06);
+    display:flex;flex-direction:column;
+  }
+  .brand{
+    padding:22px 22px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(160deg,var(--navy-2),var(--navy));
+  }
+  .brand .crest{
+    display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);
+    font-size:20px;color:#fff;letter-spacing:.3px;
+  }
+  .brand .crest .dot{width:11px;height:11px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 0 4px rgba(200,160,42,.18);}
+  .brand .course{font-size:12.5px;color:var(--gold-soft);margin-top:8px;letter-spacing:.4px;}
+  .brand .uni{font-size:11px;color:#8ea1ba;margin-top:3px;}
+  .brand .uni-ar{font-size:12px;color:#8ea1ba;margin-top:2px;direction:rtl;font-family:var(--arabic);}
+
+  .search-wrap{padding:14px 16px 6px;}
+  .search-wrap input{
+    width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.05);color:#fff;font-size:13.5px;outline:none;
+  }
+  .search-wrap input::placeholder{color:#7e90a8;}
+  .search-wrap input:focus{border-color:var(--gold);background:rgba(255,255,255,.09);}
+
+  .nav{padding:6px 10px 26px;}
+  .nav .group-label{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:1.4px;color:#6f84a0;
+    padding:14px 12px 6px;font-weight:700;
+  }
+  .nav a{
+    display:flex;align-items:center;gap:11px;text-decoration:none;color:#c4d0e0;
+    padding:9px 12px;border-radius:9px;font-size:13.7px;margin:1px 0;transition:.15s;
+    border:1px solid transparent;
+  }
+  .nav a .num{
+    flex:0 0 26px;height:26px;display:grid;place-items:center;border-radius:7px;
+    background:rgba(255,255,255,.06);font-size:12px;font-weight:700;color:var(--gold-soft);
+    font-family:var(--mono);
+  }
+  .nav a:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav a.active{
+    background:linear-gradient(90deg,rgba(200,160,42,.18),rgba(200,160,42,.04));
+    color:#fff;border-color:rgba(200,160,42,.35);
+  }
+  .nav a.active .num{background:var(--gold);color:#1a1300;}
+  .sidebar-foot{margin-top:auto;padding:14px 18px;font-size:11px;color:#6f84a0;
+    border-top:1px solid rgba(255,255,255,.07);}
+
+  /* ===================== CONTENT ===================== */
+  .content{flex:1;min-width:0;padding:0 0 80px;}
+  .topbar{
+    position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+    padding:12px 30px;background:color-mix(in srgb,var(--paper) 86%,transparent);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  }
+  .menu-toggle{display:none;background:var(--navy);color:#fff;border:none;border-radius:9px;
+    width:40px;height:40px;font-size:18px;cursor:pointer;}
+  .topbar .crumb{font-size:13px;color:var(--ink-soft);flex:1;}
+  .topbar .crumb b{color:var(--ink);}
+  .theme-btn{background:var(--paper-card);border:1px solid var(--line);border-radius:9px;
+    padding:8px 14px;cursor:pointer;color:var(--ink);font-size:13px;}
+
+  .wrap{max-width:920px;margin:0 auto;padding:34px 30px 0;}
+
+  /* hero */
+  .hero{margin-bottom:30px;padding:30px 32px;border-radius:var(--radius);
+    background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;
+    background:radial-gradient(circle,rgba(200,160,42,.35),transparent 70%);}
+  .hero h1{font-family:var(--serif);font-size:30px;margin:0 0 8px;line-height:1.2;}
+  .hero p{margin:0;color:#c7d4e6;font-size:14.5px;max-width:640px;}
+  .hero .tag{display:inline-block;margin-bottom:14px;font-size:11px;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--gold-soft);font-weight:700;}
+
+  /* chapter sections */
+  .chapter{display:none;animation:fade .35s ease;}
+  .chapter.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .ch-head{border-bottom:2px solid var(--line);padding-bottom:14px;margin-bottom:24px;}
+  .ch-head .kicker{font-size:11.5px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--teal);font-weight:700;}
+  .ch-head h2{font-family:var(--serif);font-size:27px;margin:6px 0 4px;line-height:1.22;}
+  .ch-head .ref{font-size:12.5px;color:var(--ink-soft);font-style:italic;}
+
+  h3{font-family:var(--serif);font-size:21px;margin:34px 0 12px;color:var(--ink);
+    padding-left:14px;border-left:4px solid var(--gold);}
+  h4{font-size:16px;margin:22px 0 8px;color:var(--teal);}
+  p{margin:11px 0;}
+  ul,ol{margin:10px 0 14px;padding-left:24px;}
+  li{margin:5px 0;}
+  strong{color:var(--ink);}
+  .en-term{font-family:var(--mono);font-size:.92em;background:var(--teal-soft);
+    color:var(--teal);padding:1px 6px;border-radius:5px;font-weight:600;}
+
+  /* Arabic explanation block */
+  .ar{direction:rtl;text-align:right;font-family:var(--arabic);font-size:16.5px;
+    line-height:2;color:var(--ink-soft);background:var(--paper-card);
+    border-radius:12px;padding:14px 18px;margin:12px 0;border:1px solid var(--line);
+    border-right:4px solid var(--teal);}
+  .ar b,.ar strong{color:var(--ink);}
+  .ar .en{direction:ltr;display:inline-block;font-family:var(--mono);font-size:.86em;
+    background:var(--teal-soft);color:var(--teal);padding:0 5px;border-radius:4px;font-weight:600;}
+
+  /* callouts */
+  .callout{border-radius:12px;padding:14px 18px;margin:16px 0;box-shadow:var(--shadow);
+    background:var(--paper-card);border:1px solid var(--line);position:relative;}
+  .callout .label{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+    display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+  .callout.def{border-left:5px solid var(--teal);} .callout.def .label{color:var(--teal);}
+  .callout.note{border-left:5px solid var(--gold);} .callout.note .label{color:#9a7c12;}
+  .callout.exam{border-left:5px solid #5b59c9;background:#f2f2fb;} 
+  html[data-theme="dark"] .callout.exam{background:#181a33;}
+  .callout.exam .label{color:#5b59c9;}
+  .callout.warn{border-left:5px solid var(--danger);background:var(--danger-soft);}
+  .callout.warn .label{color:var(--danger);}
+
+  /* tables */
+  table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px;
+    background:var(--paper-card);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);}
+  th,td{padding:10px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:var(--navy);color:#fff;font-size:12.5px;letter-spacing:.4px;}
+  tr:last-child td{border-bottom:none;}
+  td.ar-cell{direction:rtl;text-align:right;font-family:var(--arabic);}
+
+  /* code */
+  pre{background:#0c1622;color:#e3ecf7;padding:15px 18px;border-radius:11px;overflow-x:auto;
+    font-family:var(--mono);font-size:13.5px;line-height:1.6;margin:14px 0;}
+  code{font-family:var(--mono);}
+  .kw{color:#e0b94a;} .str{color:#7fd1a0;} .cmt{color:#6f84a0;font-style:italic;}
+
+  .pill{display:inline-block;background:var(--teal-soft);color:var(--teal);font-size:11px;
+    font-weight:700;padding:3px 10px;border-radius:20px;margin:2px 4px 2px 0;}
+
+  /* responsive */
+  @media(max-width:880px){
+    .sidebar{position:fixed;left:-320px;z-index:60;transition:left .25s;box-shadow:0 0 40px rgba(0,0,0,.4);}
+    .sidebar.open{left:0;}
+    .menu-toggle{display:grid;place-items:center;}
+    .wrap{padding:24px 18px 0;}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="crest"><span class="dot"></span> CIS 235</div>
+      <div class="course">Database Concepts &amp; Design — Study Companion</div>
+      <div class="uni">Imam Abdulrahman Bin Faisal University · College of CS &amp; IT</div>
+      <div class="uni-ar">جامعة الإمام عبدالرحمن بن فيصل · كلية علوم الحاسب وتقنية المعلومات</div>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" id="navSearch" placeholder="🔍 Search chapters… / ابحث">
+    </div>
+
+    <nav class="nav" id="nav">
+      <div class="group-label">Foundations · الأساسيات</div>
+      <a href="#" data-target="ch1" class="active"><span class="num">1</span> Introduction to Databases</a>
+      <a href="#" data-target="ch2"><span class="num">2</span> System Concepts &amp; Architecture</a>
+
+      <div class="group-label">Conceptual Design · التصميم المفاهيمي</div>
+      <a href="#" data-target="ch3"><span class="num">3</span> ER Model (Entity-Relationship)</a>
+      <a href="#" data-target="ch4"><span class="num">4</span> Enhanced ER (EER) Model</a>
+
+      <div class="group-label">Relational Model &amp; Mapping</div>
+      <a href="#" data-target="ch5"><span class="num">5</span> Relational Data Model &amp; Constraints</a>
+      <a href="#" data-target="ch9"><span class="num">9</span> ER-to-Relational Mapping</a>
+
+      <div class="group-label">Languages · لغات الاستعلام</div>
+      <a href="#" data-target="ch6"><span class="num">6</span> Basic SQL</a>
+      <a href="#" data-target="ch7"><span class="num">7</span> More SQL (Triggers, Views)</a>
+      <a href="#" data-target="ch8"><span class="num">8</span> Relational Algebra</a>
+
+      <div class="group-label">Design Theory · نظرية التصميم</div>
+      <a href="#" data-target="ch10"><span class="num">10</span> Functional Dependencies &amp; Normalization</a>
+
+      <div class="group-label">Storage &amp; Security · التخزين والأمن</div>
+      <a href="#" data-target="ch11"><span class="num">11</span> Views, Authorization &amp; Security</a>
+      <a href="#" data-target="ch12"><span class="num">12</span> File Organization</a>
+      <a href="#" data-target="ch13"><span class="num">13</span> Indexing &amp; Physical Design</a>
+
+      <div class="group-label">Reference · مراجع</div>
+      <a href="#" data-target="appendix"><span class="num">★</span> SQL Cheat Sheet &amp; Self-Tests</a>
+    </nav>
+
+    <div class="sidebar-foot">Offline study build · بُني للدراسة دون إنترنت</div>
+  </aside>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main class="content">
+    <div class="topbar">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div class="crumb">CIS 235 &nbsp;›&nbsp; <b id="crumbCh">Introduction to Databases</b></div>
+      <button class="theme-btn" id="themeBtn">🌙 Theme</button>
+    </div>
+
+    <div class="wrap">
+      <div class="hero">
+        <span class="tag">Complete Course · المقرر كاملاً</span>
+        <h1>Database Concepts &amp; Design</h1>
+        <p>A complete, offline study companion built from the lecture slides and the instructor notes — concepts in English, explanations in Arabic. Pick a chapter from the left to begin. اختر فصلاً من القائمة لتبدأ.</p>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- ====================  CHAPTER 1  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter active" id="ch1">
+        <div class="ch-head">
+          <div class="kicker">Unit 1 · Foundations</div>
+          <h2>Introduction to Database Concepts</h2>
+          <div class="ref">Textbook: Chapter 1 — “Databases and Database Users” · Slides + Instructor Notes</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          Introduction · An Example (UNIVERSITY DB) · Characteristics of the Database Approach · Actors on the Scene · Workers behind the Scene · Advantages of Using the DBMS Approach.
+        </div>
+
+        <h3>1. Basic Definitions — التعريفات الأساسية</h3>
+        <p>Before anything else, the chapter fixes a small vocabulary that the whole course is built on. These four or five terms come back in every later chapter.</p>
+
+        <div class="callout def">
+          <div class="label">📘 Core Definitions</div>
+          <ul>
+            <li><span class="en-term">Data</span> — known facts that can be recorded and that have an <strong>implicit meaning</strong>.</li>
+            <li><span class="en-term">Database</span> — a <strong>collection of related data</strong>; a logically coherent collection built for a specific purpose.</li>
+            <li><span class="en-term">Mini-world / Universe of Discourse (UoD)</span> — the part of the real world the database represents (e.g. students, courses and grades at a university).</li>
+            <li><span class="en-term">DBMS</span> — <em>Database Management System</em>: a collection of programs that lets users <strong>create and maintain</strong> a database.</li>
+            <li><span class="en-term">Database System</span> — the DBMS software <strong>together with the data itself</strong> (and sometimes the applications).</li>
+          </ul>
+        </div>
+
+        <div class="ar">
+          <b>الفكرة باختصار:</b> الـ<span class="en">data</span> هي حقائق نقدر نسجّلها ولها معنى ضمني. لمّا نجمع بيانات مترابطة ومنظّمة لغرض معيّن نسمّيها <span class="en">database</span>. الجزء من العالم الحقيقي اللي نمثّله (مثل: طلاب الجامعة ودرجاتهم) اسمه <span class="en">mini-world</span> أو <span class="en">UoD</span>. أمّا البرنامج اللي يسمح لنا ننشئ القاعدة ونديرها فهو الـ<span class="en">DBMS</span>. ولمّا نجمع الاثنين (البرنامج + البيانات نفسها) يصير عندنا <span class="en">Database System</span>.
+        </div>
+
+        <h3>2. Types of Databases &amp; Applications — أنواع التطبيقات</h3>
+        <p>Databases are no longer just numbers and text. The notes split applications into <strong>traditional</strong> and <strong>more recent</strong> categories:</p>
+
+        <table>
+          <tr><th>Traditional · تقليدية</th><th>More Recent · حديثة</th></tr>
+          <tr>
+            <td>Numeric databases<br>Textual databases</td>
+            <td>Multimedia databases (images, audio, video)<br>GIS — Geographic Information Systems (maps, weather, satellite)<br>Data Warehouses &amp; OLAP (analyze very large data, decision support)<br>Mobile databases<br>Real-time &amp; active databases (control industrial processes)</td>
+          </tr>
+        </table>
+
+        <div class="ar">
+          <b>التطبيقات التقليدية</b> تخزّن أرقام ونصوص فقط. لكن التطبيقات <b>الحديثة</b> توسّعت: الـ<span class="en">Multimedia</span> تخزّن صور وصوت وفيديو، والـ<span class="en">GIS</span> يخزّن خرائط وبيانات طقس، والـ<span class="en">Data Warehouse + OLAP</span> تُستخدم لتحليل كميات ضخمة من البيانات لدعم اتخاذ القرار، والـ<span class="en">real-time / active databases</span> تتحكم في العمليات الصناعية لحظيًا.
+        </div>
+
+        <h4>Impact of Database Technology — أثر التقنية</h4>
+        <p>The notes list where databases dominate today: <span class="pill">Banking</span><span class="pill">Insurance</span><span class="pill">Retail</span><span class="pill">Transportation</span><span class="pill">Healthcare</span><span class="pill">Manufacturing</span><span class="pill">E-commerce</span><span class="pill">Education</span><span class="pill">Social networks</span><span class="pill">Medicine &amp; genetics</span><span class="pill">Smart mobile apps</span></p>
+
+        <h3>3. An Example: the UNIVERSITY Database — مثال الجامعة</h3>
+        <p>The chapter uses one running example: a <span class="en-term">UNIVERSITY</span> database holding information about students, courses and grades. Its records (files) are:</p>
+        <ul>
+          <li><span class="en-term">STUDENT</span>, <span class="en-term">COURSE</span>, <span class="en-term">SECTION</span>, <span class="en-term">GRADE_REPORT</span>, <span class="en-term">PREREQUISITE</span></li>
+        </ul>
+        <p>Working with this database happens in three activities:</p>
+        <ol>
+          <li><strong>Define</strong> — specify the data type of each element (string of characters, integer, etc.) and the structure of each record.</li>
+          <li><strong>Construct / Load</strong> — store the actual records for every student, course, section, etc., including the relationships among them.</li>
+          <li><strong>Manipulate</strong> — query and update the mini-world, and generate reports.</li>
+        </ol>
+
+        <div class="callout def">
+          <div class="label">📘 Query vs Update</div>
+          <strong>Query</strong> → retrieves data (read only). Example: “List the names of students who took the <em>Database</em> course in Fall 2008 and their grades.”<br>
+          <strong>Update</strong> → changes data. Example: “Enter a grade of ‘A’ for ‘Smith’ in the Database section,” or “Create a new section for the Database course.”
+        </div>
+
+        <div class="ar">
+          <b>مثال الجامعة</b> هو المثال اللي بيمشي معانا طول الفصل. القاعدة فيها سجلات: <span class="en">STUDENT, COURSE, SECTION, GRADE_REPORT, PREREQUISITE</span>. للتعامل معها نمرّ بثلاث مراحل: <b>التعريف</b> (نحدّد أنواع البيانات وبنية كل سجل)، ثم <b>البناء/التحميل</b> (نخزّن السجلات الفعلية والعلاقات بينها)، ثم <b>المعالجة</b> عن طريق <span class="en">query</span> (استرجاع/قراءة فقط) و<span class="en">update</span> (إضافة/تعديل/حذف).
+        </div>
+
+        <h4>Phases for Designing a Database — مراحل التصميم</h4>
+        <ol>
+          <li><span class="en-term">Requirements specification &amp; analysis</span></li>
+          <li><span class="en-term">Conceptual design</span> (e.g. the ER model — Chapter 3)</li>
+          <li><span class="en-term">Logical design</span> (mapping to the relational model)</li>
+          <li><span class="en-term">Physical design</span> (storage &amp; indexing)</li>
+        </ol>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip</div>
+          Memorise the four design phases <strong>in order</strong>: Requirements → Conceptual → Logical → Physical. They reappear when we study the ER model and ER-to-Relational mapping.
+        </div>
+
+        <h3>4. Characteristics of the Database Approach — خصائص منهج قواعد البيانات</h3>
+        <p>This is the heart of Chapter 1. First, the contrast:</p>
+        <table>
+          <tr><th>Traditional File Processing</th><th>Database Approach</th></tr>
+          <tr>
+            <td>Each user/program defines and implements its <strong>own files</strong> for one application. Leads to duplication and program-data dependence.</td>
+            <td>A <strong>single repository</strong> stores data that is defined <strong>once</strong> and then accessed by many users and applications.</td>
+          </tr>
+        </table>
+
+        <p>The database approach has <strong>four main characteristics</strong>:</p>
+
+        <h4>① Self-Describing Nature of a Database System</h4>
+        <p>The system stores a <strong>complete definition</strong> of its structure and constraints. This description is called <span class="en-term">meta-data</span>, and it lives in the <span class="en-term">DBMS catalog</span> (data dictionary). The catalog is used both by the DBMS software and by users who need to know the structure.</p>
+        <div class="ar">القاعدة <b>تصف نفسها بنفسها</b>: تخزّن وصفًا كاملًا لبنيتها وقيودها داخل ما يُسمّى <span class="en">catalog</span>، وهذا الوصف اسمه <span class="en">meta-data</span>. هذا يخلّي برنامج الـ<span class="en">DBMS</span> الواحد قادرًا يشتغل مع تطبيقات قواعد بيانات مختلفة.</div>
+
+        <h4>② Insulation Between Programs &amp; Data + Data Abstraction</h4>
+        <ul>
+          <li><span class="en-term">Program-data independence</span> — the structure of data files is stored in the catalog <strong>separately</strong> from the access programs, so we can change the storage structure without changing the programs.</li>
+          <li><span class="en-term">Program-operation independence</span> — an operation has two parts: an <strong>interface</strong> (name + argument types) and an <strong>implementation</strong> that can change without affecting the interface.</li>
+          <li><span class="en-term">Data abstraction</span> — a <span class="en-term">data model</span> gives a <strong>conceptual representation</strong> of data, hiding storage and implementation details.</li>
+        </ul>
+        <div class="ar"><b>العزل بين البرامج والبيانات:</b> لأن بنية البيانات مخزّنة في الـ<span class="en">catalog</span> مستقلة عن البرامج، نقدر نغيّر طريقة التخزين دون ما نعدّل البرامج — وهذا اسمه <span class="en">program-data independence</span>. والـ<span class="en">data abstraction</span> تعني أن الـ<span class="en">data model</span> يعطينا صورة مفاهيمية للبيانات ويخفي تفاصيل التخزين.</div>
+
+        <h4>③ Support of Multiple Views of the Data</h4>
+        <p>A <span class="en-term">view</span> is a subset of the database — virtual data <strong>derived</strong> from the stored files but <strong>not explicitly stored</strong>. A multiuser DBMS lets each user/application see only the view that interests them.</p>
+
+        <h4>④ Sharing of Data &amp; Multiuser Transaction Processing</h4>
+        <p>Many users access the database at the same time. To keep results correct, the DBMS uses:</p>
+        <ul>
+          <li><span class="en-term">Concurrency control</span> — ensures several users updating the same data do so in a controlled manner so the result is correct.</li>
+          <li><span class="en-term">OLTP</span> (Online Transaction Processing) — supports hundreds of concurrent transactions per second.</li>
+        </ul>
+        <div class="callout def">
+          <div class="label">📘 Transaction Properties (from the notes)</div>
+          <ul>
+            <li><span class="en-term">Isolation</span> — each transaction appears to execute in isolation from other transactions.</li>
+            <li><span class="en-term">Atomicity</span> — either <strong>all</strong> the database operations in a transaction are executed, or <strong>none</strong> are.</li>
+          </ul>
+        </div>
+        <div class="ar"><b>مشاركة البيانات:</b> عدّة مستخدمين يوصلون للقاعدة بنفس الوقت، فنحتاج <span class="en">concurrency control</span> عشان لمّا أكثر من واحد يعدّل نفس البيانات تطلع النتيجة صحيحة. ومن خصائص الـ<span class="en">transaction</span>: <b>العزل</b> <span class="en">isolation</span> (كأن كل عملية تشتغل لحالها) و<b>الذرّية</b> <span class="en">atomicity</span> (إمّا تتنفّذ كل العمليات أو ولا وحدة).</div>
+
+        <h3>5. Actors on the Scene — الفاعلون في المشهد</h3>
+        <p>These are the people who <strong>use or design</strong> the database day-to-day:</p>
+        <ol>
+          <li><span class="en-term">Database Administrators (DBA)</span> — authorize access, coordinate &amp; monitor use, acquire hardware/software resources.</li>
+          <li><span class="en-term">Database Designers</span> — identify the data to be stored and choose appropriate structures to represent it.</li>
+          <li><span class="en-term">End Users</span> — people whose jobs require access to the database.</li>
+          <li><span class="en-term">System Analysts</span> — determine the requirements of end users.</li>
+          <li><span class="en-term">Application Programmers</span> — implement those specifications as programs.</li>
+        </ol>
+
+        <h3>6. Workers Behind the Scene — العاملون خلف الكواليس</h3>
+        <p>These people <strong>build the DBMS itself</strong> — they don’t use any specific database:</p>
+        <ol>
+          <li><span class="en-term">DBMS system designers &amp; implementers</span> — design and implement the DBMS modules and interfaces.</li>
+          <li><span class="en-term">Tool developers</span> — design and implement tools (design aids, performance monitors, etc.).</li>
+          <li><span class="en-term">Operators &amp; maintenance personnel</span> — run and maintain the hardware/software environment.</li>
+        </ol>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip — common trap</div>
+          “Actors <strong>on</strong> the scene” use a particular database (DBA, designers, end users…). “Workers <strong>behind</strong> the scene” build the DBMS product itself (system implementers, tool developers, operators). Don’t mix them up. لا تخلط بين الفئتين.
+        </div>
+
+        <h3>7. Advantages of Using the DBMS Approach — مزايا استخدام منهج قواعد البيانات</h3>
+        <ol>
+          <li><strong>Controlling redundancy</strong> — via <span class="en-term">data normalization</span> (saves storage, ensures consistency); sometimes controlled redundancy (<span class="en-term">denormalization</span>) is used to speed up queries.</li>
+          <li><strong>Restricting unauthorized access</strong> — security &amp; authorization subsystem, privileged software.</li>
+          <li><strong>Providing storage structures &amp; search techniques</strong> for efficient query processing (e.g. indexes).</li>
+          <li><strong>Providing backup &amp; recovery</strong> — the backup/recovery subsystem restores data after failure.</li>
+          <li><strong>Providing multiple user interfaces</strong> — GUIs, query languages, programming interfaces.</li>
+          <li><strong>Representing complex relationships</strong> among data.</li>
+          <li><strong>Enforcing integrity constraints</strong> — e.g. <span class="en-term">referential integrity</span> (every SECTION must relate to a COURSE) and <span class="en-term">key / uniqueness</span> constraints (every COURSE has a unique number).</li>
+          <li><strong>Permitting inferencing &amp; actions using rules</strong> — <span class="en-term">triggers</span> (a rule activated by updates) and <span class="en-term">stored procedures</span>.</li>
+          <li><strong>Providing persistent storage</strong> for program objects (e.g. object-oriented DBMSs).</li>
+        </ol>
+
+        <div class="callout warn">
+          <div class="label">⚠️ Why NOT plain files? (Data Redundancy problems)</div>
+          The file-processing approach suffers from: <strong>program-data dependence</strong>, <strong>duplication of data &amp; effort</strong>, <strong>limited data sharing</strong>, <strong>lengthy development time</strong>, and <strong>excessive program maintenance</strong>. Storing the same data many times wastes space and causes <strong>inconsistency</strong>.
+        </div>
+
+        <div class="ar">
+          <b>أهم المزايا للمراجعة السريعة:</b> التحكم في التكرار <span class="en">controlling redundancy</span> عبر الـ<span class="en">normalization</span> (يوفّر مساحة ويمنع التضارب)؛ تقييد الوصول غير المصرّح <span class="en">restricting unauthorized access</span>؛ توفير بنى تخزين وبحث فعّالة؛ النسخ الاحتياطي والاسترجاع <span class="en">backup &amp; recovery</span>؛ تعدد الواجهات؛ تمثيل العلاقات المعقّدة؛ فرض قيود التكامل <span class="en">integrity constraints</span> مثل <span class="en">referential integrity</span> و<span class="en">key constraint</span>؛ والقواعد والإجراءات مثل <span class="en">triggers</span>. وفي المقابل، نظام الملفات التقليدي يعاني من تكرار البيانات وتبعية البرامج للبيانات وصعوبة المشاركة والصيانة.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 1 Summary — الخلاصة</div>
+          A <strong>Database</strong> is a collection of related (recorded) facts. A <strong>DBMS</strong> is a generalized software package for implementing and maintaining a computerized database. The database approach is defined by being self-describing, insulating programs from data, supporting multiple views, and allowing multiuser sharing — giving advantages over plain file processing. Several categories of users (actors &amp; workers) interact with it.
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 1  ========================= -->
+      <!-- >>> NEXT: Chapter 2 — type "Continue" to append here <<<    -->
+
+
+<!-- ============================================================ -->
+      <!-- ====================  CHAPTER 2  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter" id="ch2">
+        <div class="ch-head">
+          <div class="kicker">Unit 2 · Foundations</div>
+          <h2>Database System Concepts &amp; Architecture</h2>
+          <div class="ref">Textbook: Chapter 2 · Slides + Instructor Notes</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          Data Models &amp; Their Categories · Schemas, Instances &amp; States · Three-Schema Architecture · Data Independence · DBMS Languages · Database System Utilities &amp; Tools · Centralized &amp; Client-Server Architectures · Classification of DBMSs.
+        </div>
+
+        <h3>1. Data Models — نماذج البيانات</h3>
+        <div class="callout def">
+          <div class="label">📘 Definition</div>
+          A <span class="en-term">data model</span> is a set of concepts to describe <strong>(a)</strong> the structure of a database, <strong>(b)</strong> the operations for manipulating those structures, and <strong>(c)</strong> certain constraints the database should obey.
+        </div>
+        <p>So a data model has three parts:</p>
+        <ul>
+          <li><span class="en-term">Structure</span> — constructs that define the database: elements with data types, groups of elements (entity, record, table), and relationships among those groups.</li>
+          <li><span class="en-term">Operations</span> — used to specify retrievals and updates by referring to the model’s constructs. They include <strong>basic</strong> operations (generic insert, delete, update) and <strong>user-defined</strong> operations (e.g. <code>compute_student_gpa</code>, <code>update_inventory</code>).</li>
+          <li><span class="en-term">Constraints</span> — restrictions on valid data that must be enforced at all times (e.g. <em>age must be &lt; 100</em>).</li>
+        </ul>
+        <div class="ar">
+          <b>نموذج البيانات</b> هو مجموعة مفاهيم تصف ثلاثة أشياء: <b>البنية</b> (العناصر وأنواعها والمجموعات مثل <span class="en">entity / record / table</span> والعلاقات بينها)، و<b>العمليات</b> اللي نسترجع ونعدّل فيها البيانات (أساسية مثل <span class="en">insert/delete/update</span>، ومعرّفة من المستخدم مثل حساب المعدل)، و<b>القيود</b> اللي لازم تتحقق دائمًا (مثل: العمر أقل من ١٠٠).
+        </div>
+
+        <h3>2. Categories of Data Models — تصنيف نماذج البيانات</h3>
+        <table>
+          <tr><th>Category</th><th>What it describes</th><th>Examples</th></tr>
+          <tr><td><span class="en-term">Conceptual</span> (high-level, semantic)</td><td>Concepts close to how users perceive data. Also called <em>entity-based / object-based</em>.</td><td>ER model (entities, attributes, relationships)</td></tr>
+          <tr><td><span class="en-term">Physical</span> (low-level, internal)</td><td>Details of <strong>how</strong> data is stored in the computer.</td><td>Access paths, record formats, orderings</td></tr>
+          <tr><td><span class="en-term">Implementation</span> (representational)</td><td>Falls <strong>between</strong> the two above; used by most commercial DBMSs.</td><td>Relational data model</td></tr>
+          <tr><td><span class="en-term">Self-Describing</span></td><td>Combine the <strong>description</strong> of data <strong>with</strong> the data values.</td><td>XML, key-value stores, some NoSQL</td></tr>
+        </table>
+        <div class="callout def">
+          <div class="label">📘 From the notes — conceptual model building blocks</div>
+          A conceptual model uses <span class="en-term">entities</span> (a real-world object/concept, e.g. an employee), <span class="en-term">attributes</span> (a property that describes an entity, e.g. name or salary), and <span class="en-term">relationships</span> (an association among two or more entities, e.g. <em>works-on</em> between an employee and a project). The ER model (Chapter 3) is the popular high-level conceptual model.
+        </div>
+        <div class="ar">
+          نقسّم النماذج إلى: <b>مفاهيمي</b> <span class="en">conceptual</span> قريب من تصوّر المستخدم (يستخدم <span class="en">entities / attributes / relationships</span>)، و<b>فيزيائي</b> <span class="en">physical</span> يصف كيف تُخزَّن البيانات فعليًا، و<b>تمثيلي</b> <span class="en">implementation</span> في المنتصف وتستخدمه معظم الأنظمة التجارية مثل النموذج العلائقي، وأخيرًا <b>الذاتي الوصف</b> <span class="en">self-describing</span> اللي يدمج وصف البيانات مع قيمها مثل <span class="en">XML</span> وأنظمة <span class="en">NoSQL</span>.
+        </div>
+
+        <h3>3. Schemas vs. Instances (States) — المخطط مقابل الحالة</h3>
+        <p>This distinction is one of the most exam-tested ideas in the chapter.</p>
+        <table>
+          <tr><th>Database Schema (مخطط)</th><th>Database State / Instance (حالة)</th></tr>
+          <tr>
+            <td>The <strong>description</strong> of the database: structure, data types, constraints. Specified during design; <strong>changes rarely</strong>.</td>
+            <td>The <strong>actual data</strong> stored at a particular moment. Also called <em>instance, occurrence, or snapshot</em>. <strong>Changes constantly</strong>.</td>
+          </tr>
+        </table>
+        <ul>
+          <li><span class="en-term">Schema diagram</span> — an illustrative display of (most of) a schema.</li>
+          <li><span class="en-term">Schema construct</span> — a component/object within the schema, e.g. STUDENT, COURSE.</li>
+          <li><span class="en-term">Initial state</span> — the state when the database is first loaded.</li>
+          <li><span class="en-term">Valid state</span> — a state that satisfies the structure and constraints of the database.</li>
+        </ul>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip — the classic analogy</div>
+          Schema = the <strong>variable declaration</strong>; State = the <strong>value</strong> at runtime. “Smith” is an <em>instance</em> of the entity PERSON. The schema barely changes; the state changes with every insert/update/delete.
+        </div>
+        <div class="ar">
+          <b>الفرق المهم:</b> الـ<span class="en">schema</span> هو <b>وصف</b> القاعدة (البنية، الأنواع، القيود) ويتحدّد وقت التصميم ونادرًا يتغيّر. أمّا الـ<span class="en">state</span> (ويسمّى أيضًا <span class="en">instance / snapshot</span>) فهو <b>البيانات الفعلية</b> في لحظة معيّنة ويتغيّر باستمرار. الحالة <span class="en">valid</span> هي اللي تحقّق كل قيود القاعدة.
+        </div>
+
+        <h3>4. Three-Schema Architecture — معمارية المخططات الثلاثة</h3>
+        <p>Proposed to support two key DBMS goals: <strong>program-data independence</strong> and <strong>multiple views</strong>. Its purpose is to <strong>separate user applications from the physical database</strong>. It defines three levels:</p>
+        <table>
+          <tr><th>Level</th><th>Schema</th><th>Describes</th><th>Model used</th></tr>
+          <tr><td>Internal</td><td><span class="en-term">Internal schema</span></td><td>Physical storage structures &amp; access paths (e.g. indexes).</td><td>Physical data model</td></tr>
+          <tr><td>Conceptual</td><td><span class="en-term">Conceptual schema</span></td><td>Structure &amp; constraints of the <strong>whole</strong> database for the community of users; hides physical detail.</td><td>Conceptual or implementation model</td></tr>
+          <tr><td>External</td><td><span class="en-term">External schemas</span></td><td>The various <strong>user views</strong> — each shows the part of interest and hides the rest.</td><td>Same model as conceptual</td></tr>
+        </table>
+        <p><strong>Mappings</strong> connect the levels: programs refer to an <em>external</em> schema, the DBMS maps the request down to the <em>internal</em> schema for execution, then reformats the extracted data back up to match the user’s external view (e.g. formatting an SQL result for a web page).</p>
+        <div class="ar">
+          <b>معمارية المخططات الثلاثة</b> هدفها فصل تطبيقات المستخدم عن التخزين الفيزيائي. ثلاثة مستويات: <b>الداخلي</b> <span class="en">internal</span> يصف التخزين الفيزيائي ومسارات الوصول، و<b>المفاهيمي</b> <span class="en">conceptual</span> يصف بنية القاعدة كاملة لكل المستخدمين ويخفي تفاصيل التخزين، و<b>الخارجي</b> <span class="en">external</span> هو رؤى المستخدمين (كل مستخدم يشوف اللي يهمّه). الـ<span class="en">mappings</span> هي اللي تترجم الطلب بين المستويات.
+        </div>
+
+        <h3>5. Data Independence — استقلالية البيانات</h3>
+        <div class="callout def">
+          <div class="label">📘 Definition</div>
+          <span class="en-term">Data independence</span> = the capacity to change the schema at one level <strong>without</strong> changing the schema at the next higher level.
+        </div>
+        <ul>
+          <li><span class="en-term">Logical data independence</span> — change the <strong>conceptual</strong> schema without changing the <strong>external</strong> schemas or their application programs.</li>
+          <li><span class="en-term">Physical data independence</span> — change the <strong>internal</strong> schema without changing the <strong>conceptual</strong> schema (e.g. reorganizing file structures or creating new indexes to improve performance).</li>
+        </ul>
+        <p>When a lower-level schema changes, <strong>only the mappings</strong> to the higher level need updating — the higher schemas (and the programs referring to them) stay unchanged.</p>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip</div>
+          <strong>Logical</strong> independence is harder to achieve than <strong>Physical</strong>, because changing the conceptual schema can affect more applications. Remember the direction: each level is insulated from changes <em>below</em> it.
+        </div>
+        <div class="ar">
+          <b>استقلالية البيانات</b> = قدرتنا نغيّر مخطط مستوى معيّن دون ما نضطر نغيّر المستوى الأعلى منه. <span class="en">Logical</span>: نغيّر المخطط المفاهيمي دون التأثير على الرؤى الخارجية والبرامج. <span class="en">Physical</span>: نغيّر المخطط الداخلي (مثل إعادة تنظيم الملفات أو إنشاء <span class="en">index</span>) دون التأثير على المفاهيمي. عند التغيير نعدّل الـ<span class="en">mappings</span> فقط.
+        </div>
+
+        <h3>6. DBMS Languages — لغات نظام إدارة قواعد البيانات</h3>
+        <table>
+          <tr><th>Language</th><th>Used for</th></tr>
+          <tr><td><span class="en-term">DDL</span> — Data Definition Language</td><td>Used by the DBA &amp; designers to specify the conceptual (and often internal/external) schema.</td></tr>
+          <tr><td><span class="en-term">DML</span> — Data Manipulation Language</td><td>Specify retrievals and updates (insert, delete, retrieve).</td></tr>
+          <tr><td><span class="en-term">SDL</span> — Storage Definition Language</td><td>Specify the internal (storage) schema.</td></tr>
+          <tr><td><span class="en-term">VDL</span> — View Definition Language</td><td>Specify external schemas / user views.</td></tr>
+        </table>
+        <p>DML can be used two ways: <span class="en-term">embedded</span> inside a general-purpose <strong>host language</strong> (C, C++, Java, COBOL) as a data sublanguage, or as <strong>stand-alone</strong> commands applied directly — called a <span class="en-term">query language</span>.</p>
+        <div class="ar">
+          أربع لغات: <span class="en">DDL</span> لتعريف المخططات، <span class="en">DML</span> للاسترجاع والتعديل، <span class="en">SDL</span> لتعريف التخزين الداخلي، <span class="en">VDL</span> لتعريف الرؤى. والـ<span class="en">DML</span> إمّا <b>مدمجة</b> داخل لغة برمجة مضيفة <span class="en">host language</span> مثل Java، أو <b>مستقلة</b> تُكتب مباشرة وتسمّى <span class="en">query language</span>.
+        </div>
+
+        <h3>7. Database System Utilities &amp; Tools — أدوات النظام</h3>
+        <ul>
+          <li><span class="en-term">Loading</span> — load data from files into the database (incl. data conversion tools).</li>
+          <li><span class="en-term">Backup</span> — back up the database periodically (e.g. to tape).</li>
+          <li><span class="en-term">Reorganization</span> — reorganize database file structures.</li>
+          <li><span class="en-term">Performance monitoring</span> — monitor database usage and performance.</li>
+          <li>Plus report generation, sorting, user monitoring, data compression, etc.</li>
+        </ul>
+
+        <h3>8. Centralized &amp; Client-Server Architectures — المعماريات</h3>
+        <h4>Centralized DBMS</h4>
+        <p>Combines everything into a <strong>single system</strong>: DBMS software, hardware, application programs, and UI processing. A user may connect via a remote terminal, but <strong>all processing happens at the central site</strong>.</p>
+
+        <h4>Two-Tier Client-Server</h4>
+        <p>Specialized servers provide specialized functions: <span class="pill">Print server</span><span class="pill">File server</span><span class="pill">DBMS server</span><span class="pill">Web server</span><span class="pill">Email server</span>. Clients access them over a network (LAN, wireless).</p>
+        <ul>
+          <li><span class="en-term">Clients</span> — provide interfaces via a client software module; may be diskless machines, PCs or workstations connected via a network.</li>
+          <li><span class="en-term">DBMS server</span> — provides query &amp; transaction services. Relational DBMS servers are called <em>SQL servers / query servers / transaction servers</em>. Clients reach them through an <span class="en-term">API</span> using standards like <span class="en-term">ODBC</span> (Open Database Connectivity) or <span class="en-term">JDBC</span> (for Java).</li>
+        </ul>
+
+        <h4>Three-Tier Client-Server (for Web apps)</h4>
+        <p>Adds an intermediate layer — the <span class="en-term">Application / Web Server</span> — that holds the web-connectivity software and the <strong>business logic</strong>, acting as a conduit between the database server and the client.</p>
+        <div class="callout note">
+          <div class="label">🔐 Security benefit</div>
+          In three-tier, the <strong>database server is only accessible via the middle tier</strong> — clients cannot reach it directly. Clients hold only the UI / web browser. This enhances security.
+        </div>
+        <div class="ar">
+          <b>المعماريات:</b> <span class="en">Centralized</span> كل شيء في نظام واحد والمعالجة مركزية. <span class="en">Two-tier</span> خوادم متخصصة (DBMS server, Web server...) والعملاء يوصلونها عبر <span class="en">API</span> مثل <span class="en">ODBC/JDBC</span>. <span class="en">Three-tier</span> (للويب) يضيف طبقة وسطى <span class="en">Application Server</span> فيها منطق العمل، وميزتها <b>الأمان</b>: العميل ما يقدر يوصل خادم القاعدة مباشرة.
+        </div>
+
+        <h3>9. Classification of DBMSs — تصنيف الأنظمة</h3>
+        <ul>
+          <li>By <strong>data model</strong>: relational (and object-relational), object, big-data / key-value, NoSQL.</li>
+          <li><span class="en-term">Single-user</span> (personal computers) vs. <span class="en-term">multi-user</span> (most DBMSs).</li>
+          <li><span class="en-term">Centralized</span> (one computer, one DB) vs. <span class="en-term">distributed</span> (multiple computers &amp; DBs).</li>
+          <li>By type of access paths; and <strong>General-purpose</strong> vs. <strong>Special-purpose</strong> (e.g. airline/hotel reservation systems are special-purpose OLTP).</li>
+        </ul>
+        <p><strong>Cost range:</strong> from free open-source systems (MySQL, PostgreSQL) up to configurations costing millions.</p>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 2 Summary — الخلاصة</div>
+          A <strong>data model</strong> (structure + operations + constraints) gives data abstraction at conceptual, implementation, physical, or self-describing levels. We separate the <strong>schema</strong> (description) from the <strong>state</strong> (actual data). The <strong>three-schema architecture</strong> (internal / conceptual / external) plus <strong>mappings</strong> deliver logical &amp; physical <strong>data independence</strong>. The DBMS offers DDL/DML/SDL/VDL languages, utilities, and runs on centralized, two-tier, or three-tier architectures. The DB design phases are <strong>Conceptual → Logical → Physical</strong>.
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 2  ========================= -->
+      <!-- >>> NEXT: Chapter 3 (ER Model) — type "Continue" <<<        -->
+
+
+<!-- ============================================================ -->
+      <!-- ====================  CHAPTER 3  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter" id="ch3">
+        <div class="ch-head">
+          <div class="kicker">Unit 3 · Conceptual Design</div>
+          <h2>Data Modeling Using the Entity-Relationship (ER) Model</h2>
+          <div class="ref">Textbook: Chapter 3 · Slides + Instructor Notes + Exercises (COMPANY &amp; UNIVERSITY)</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          DB Design Process · COMPANY example · Entities &amp; Attributes · Entity Types, Value Sets &amp; Keys · Relationships &amp; Relationship Types · Cardinality &amp; Participation constraints · (min,max) notation · Recursive relationships · Relationship attributes · Weak Entity Types · ER diagram notation.
+        </div>
+
+        <h3>1. The Database Design Process — عملية تصميم القاعدة</h3>
+        <p>Designing a database has two parallel activities: <span class="en-term">database design</span> and <span class="en-term">applications design</span> (the programs &amp; interfaces — part of software engineering). This chapter focuses on <strong>conceptual database design</strong>: producing the conceptual schema using the ER model.</p>
+        <div class="ar">
+          تصميم القاعدة له نشاطان: تصميم <b>البيانات</b> <span class="en">database design</span> وتصميم <b>التطبيقات</b> <span class="en">applications design</span>. هذا الفصل يركّز على <b>التصميم المفاهيمي</b> — نرسم الـ<span class="en">conceptual schema</span> باستخدام نموذج <span class="en">ER</span>.
+        </div>
+
+        <h3>2. The COMPANY Example — مثال الشركة</h3>
+        <p>The whole chapter is built on these requirements:</p>
+        <ul>
+          <li>The company is organized into <span class="en-term">DEPARTMENT</span>s. Each department has a name, number, and an employee who <strong>manages</strong> it (with a manager <em>start date</em>). A department may have several <strong>locations</strong>.</li>
+          <li>Each department <strong>controls</strong> a number of <span class="en-term">PROJECT</span>s. Each project has a unique name, unique number, and a single location.</li>
+          <li>Each <span class="en-term">EMPLOYEE</span> has SSN, address, salary, sex, birthdate. An employee <strong>works for one</strong> department but may <strong>work on several</strong> projects (storing <em>hours/week</em> on each). We track each employee’s direct <strong>supervisor</strong>.</li>
+          <li>Each employee may have several <span class="en-term">DEPENDENT</span>s (name, sex, birthdate, relationship).</li>
+        </ul>
+        <p>→ Four initial entity types: <span class="pill">DEPARTMENT</span><span class="pill">PROJECT</span><span class="pill">EMPLOYEE</span><span class="pill">DEPENDENT</span></p>
+
+        <h3>3. Entities &amp; Attributes — الكيانات والصفات</h3>
+        <div class="callout def">
+          <div class="label">📘 Definitions</div>
+          <ul>
+            <li><span class="en-term">Entity</span> — a specific thing/object in the mini-world (e.g. employee <em>John Smith</em>, the <em>Research</em> department).</li>
+            <li><span class="en-term">Attribute</span> — a property describing an entity (Name, SSN, Address, Sex, BirthDate). Each attribute has a <span class="en-term">value set</span> (domain / data type).</li>
+          </ul>
+        </div>
+
+        <h4>Types of Attributes — أنواع الصفات</h4>
+        <table>
+          <tr><th>Type</th><th>Meaning</th><th>Example</th><th>ER symbol</th></tr>
+          <tr><td><span class="en-term">Simple (atomic)</span></td><td>Single indivisible value.</td><td>SSN, Sex</td><td>Oval</td></tr>
+          <tr><td><span class="en-term">Composite</span></td><td>Made of several components (can nest into a hierarchy).</td><td>Address(Apt#, Street, City, State, Zip), Name(First, Middle, Last)</td><td>Oval with sub-ovals</td></tr>
+          <tr><td><span class="en-term">Multi-valued</span></td><td>Entity may have many values. Written <code>{Color}</code>.</td><td>Color of a CAR, PreviousDegrees of a STUDENT</td><td>Double oval</td></tr>
+          <tr><td><span class="en-term">Derived</span></td><td>Computed from other data (not stored). Appears in exercises as “calculated”.</td><td>Age (from BirthDate), project completion rate</td><td>Dashed oval</td></tr>
+        </table>
+        <div class="callout def">
+          <div class="label">📘 Nested composite + multivalued</div>
+          Attributes can nest arbitrarily. Example from the notes — previous education of a STUDENT:
+          <pre>{ PreviousEducation ( CollegeName, StartDate, EndDate,
+    { Degree (DegreeName, Month, Year) },
+    { Transcript (CourseName, Semester, Year, Grade) } ) }</pre>
+        </div>
+        <div class="ar">
+          الصفات أنواع: <b>بسيطة</b> <span class="en">simple</span> قيمة واحدة غير قابلة للتجزئة، و<b>مركّبة</b> <span class="en">composite</span> تتكوّن من أجزاء مثل العنوان والاسم، و<b>متعددة القيم</b> <span class="en">multivalued</span> مثل ألوان السيارة (نكتبها بين أقواس {})، و<b>مشتقة</b> <span class="en">derived</span> تُحسب من غيرها مثل العمر (نرسمها بيضاوي متقطّع). وممكن نعشّش المركّبة والمتعددة لأي عدد من المستويات.
+        </div>
+
+        <h3>4. Entity Types, Keys &amp; Entity Sets — أنواع الكيانات والمفاتيح</h3>
+        <ul>
+          <li><span class="en-term">Entity type</span> — entities with the same attributes grouped together (e.g. EMPLOYEE, PROJECT).</li>
+          <li><span class="en-term">Key attribute</span> — an attribute whose value is <strong>unique</strong> for each entity (e.g. SSN of EMPLOYEE). May be <strong>composite</strong> (e.g. VehicleTagNumber = (Number, State)).</li>
+          <li>An entity type may have <strong>more than one key</strong> (CAR has VIN <em>and</em> license plate). In ER, <strong>each key is underlined</strong> (unlike the relational schema where only one primary key is underlined).</li>
+          <li><span class="en-term">Entity set / collection</span> — the current set of all entities of that type stored in the DB (the “state”).</li>
+        </ul>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip</div>
+          In an <strong>ER diagram</strong> ALL candidate keys are underlined. In a <strong>relational schema</strong> only ONE (the primary key) is underlined. This subtle difference is a favorite exam question.
+        </div>
+
+        <h3>5. ER Diagram Notation — رموز مخطط ER</h3>
+        <p>Since the slides are diagrams, memorise the symbol vocabulary:</p>
+        <table>
+          <tr><th>Symbol</th><th>Represents</th></tr>
+          <tr><td>Rectangle ▭</td><td>Entity type (double rectangle = <strong>weak</strong> entity)</td></tr>
+          <tr><td>Oval ⬭</td><td>Attribute (double oval = multivalued; dashed oval = derived)</td></tr>
+          <tr><td>Underline</td><td>Key attribute (dashed underline = partial key of weak entity)</td></tr>
+          <tr><td>Diamond ◇</td><td>Relationship type (double diamond = <strong>identifying</strong> relationship)</td></tr>
+          <tr><td>Lines</td><td>Connect attributes/entities to relationships. <strong>Double line</strong> = total participation; <strong>single line</strong> = partial.</td></tr>
+        </table>
+
+        <h3>6. Relationships &amp; Relationship Types — العلاقات</h3>
+        <div class="callout def">
+          <div class="label">📘 Definitions</div>
+          A <span class="en-term">relationship</span> relates two or more entities with a specific meaning (John Smith <em>works on</em> ProductX). A <span class="en-term">relationship type</span> groups relationships of the same kind (WORKS_ON between EMPLOYEE &amp; PROJECT). The <span class="en-term">degree</span> = number of participating entity types (binary = degree 2). A <span class="en-term">relationship set</span> is the current state (instances) of a relationship type.
+        </div>
+        <p>The six binary relationship types in COMPANY:</p>
+        <table>
+          <tr><th>Relationship</th><th>Between</th></tr>
+          <tr><td><span class="en-term">WORKS_FOR</span></td><td>EMPLOYEE ↔ DEPARTMENT</td></tr>
+          <tr><td><span class="en-term">MANAGES</span></td><td>EMPLOYEE ↔ DEPARTMENT</td></tr>
+          <tr><td><span class="en-term">CONTROLS</span></td><td>DEPARTMENT ↔ PROJECT</td></tr>
+          <tr><td><span class="en-term">WORKS_ON</span></td><td>EMPLOYEE ↔ PROJECT</td></tr>
+          <tr><td><span class="en-term">SUPERVISION</span></td><td>EMPLOYEE (subordinate) ↔ EMPLOYEE (supervisor) — recursive</td></tr>
+          <tr><td><span class="en-term">DEPENDENTS_OF</span></td><td>EMPLOYEE ↔ DEPENDENT — identifying</td></tr>
+        </table>
+        <p>Note: <strong>more than one</strong> relationship type can exist between the same entities (MANAGES and WORKS_FOR are distinct, with different meanings/instances).</p>
+        <div class="ar">
+          <b>العلاقة</b> تربط كيانين أو أكثر بمعنى محدد. نوع العلاقة <span class="en">relationship type</span> يجمع العلاقات المتشابهة، و<span class="en">degree</span> هي عدد الكيانات المشاركة (ثنائية = درجة ٢). ممكن يكون فيه أكثر من علاقة بين نفس الكيانين (مثل <span class="en">MANAGES</span> و<span class="en">WORKS_FOR</span>) بمعانٍ مختلفة.
+        </div>
+
+        <h3>7. Constraints on Relationships — قيود العلاقات</h3>
+        <div class="callout def">
+          <div class="label">📘 Two kinds of constraint</div>
+          <ul>
+            <li><span class="en-term">Cardinality Ratio</span> → specifies the <strong>maximum</strong> participation: 1:1, 1:N, N:1, M:N.</li>
+            <li><span class="en-term">Participation / Existence Dependency</span> → specifies the <strong>minimum</strong> participation: <strong>total</strong> (mandatory, double line) or <strong>partial</strong> (optional, single line).</li>
+          </ul>
+        </div>
+        <table>
+          <tr><th>Ratio</th><th>Meaning</th><th>COMPANY example</th></tr>
+          <tr><td><span class="en-term">1:1</span></td><td>Each side relates to at most one.</td><td>EMPLOYEE MANAGES DEPARTMENT</td></tr>
+          <tr><td><span class="en-term">1:N / N:1</span></td><td>One side relates to many.</td><td>DEPARTMENT — WORKS_FOR — EMPLOYEE (1:N)</td></tr>
+          <tr><td><span class="en-term">M:N</span></td><td>Many on both sides.</td><td>EMPLOYEE WORKS_ON PROJECT</td></tr>
+        </table>
+        <div class="ar">
+          قيدان على العلاقة: <b>نسبة العدد</b> <span class="en">cardinality ratio</span> تحدّد <b>الحد الأقصى</b> (1:1, 1:N, M:N)، و<b>قيد المشاركة</b> <span class="en">participation</span> يحدّد <b>الحد الأدنى</b>: <span class="en">total</span> (إجبارية، خط مزدوج) أو <span class="en">partial</span> (اختيارية، خط مفرد).
+        </div>
+
+        <h3>8. The (min, max) Notation — صيغة الحد الأدنى والأقصى</h3>
+        <p>An alternative way to state constraints. For each participation of entity E in relationship R, <code>(min, max)</code> says each entity <em>e</em> participates in <strong>at least min</strong> and <strong>at most max</strong> relationship instances. Rules: <code>min ≤ max</code>, <code>min ≥ 0</code>, <code>max ≥ 1</code>. Default (no constraint) = <code>(0, N)</code>.</p>
+        <div class="callout exam">
+          <div class="label">📝 How to read it — important!</div>
+          Read the (min,max) placed next to an entity type while <strong>looking AWAY</strong> from that entity (toward the relationship). Worked examples:
+          <ul>
+            <li>“A department has exactly one manager; an employee manages at most one department.” → EMPLOYEE in MANAGES = <code>(0,1)</code>; DEPARTMENT in MANAGES = <code>(1,1)</code>.</li>
+            <li>“An employee works for exactly one department; a department has any number of employees.” → EMPLOYEE in WORKS_FOR = <code>(1,1)</code>; DEPARTMENT in WORKS_FOR = <code>(1,N)</code>.</li>
+          </ul>
+        </div>
+        <div class="ar">
+          صيغة <span class="en">(min,max)</span>: لكل مشاركة لكيان في علاقة، نكتب الحد الأدنى والأقصى لعدد مرات مشاركة الكيان. <b>قاعدة القراءة:</b> اقرأ الرقم المكتوب بجانب الكيان وأنت <b>تنظر بعيدًا عنه</b> نحو العلاقة. مثال: الموظف يعمل في قسم واحد بالضبط → <span class="en">(1,1)</span>، والقسم فيه أي عدد من الموظفين → <span class="en">(1,N)</span>.
+        </div>
+
+        <h3>9. Recursive (Self-Referencing) Relationship — العلاقة الارتدادية</h3>
+        <p>A relationship type between the <strong>same</strong> entity type playing <strong>distinct roles</strong>. Example: <span class="en-term">SUPERVISION</span> — EMPLOYEE participates twice: once as <em>supervisor (boss)</em> and once as <em>supervisee (subordinate)</em>. In the diagram each participation is labeled with a <strong>role name</strong> (role 1 / role 2) to tell them apart.</p>
+        <div class="ar">
+          العلاقة <b>الارتدادية</b> <span class="en">recursive</span> بين نفس الكيان لكن بأدوار مختلفة. مثال <span class="en">SUPERVISION</span>: الموظف يشارك مرتين — مرة كـ<b>مشرف</b> ومرة كـ<b>مرؤوس</b>. نكتب <span class="en">role names</span> على الخطوط للتمييز.
+        </div>
+
+        <h3>10. Attributes of Relationship Types — صفات العلاقات</h3>
+        <p>A relationship can carry attributes. Example: <span class="en-term">HoursPerWeek</span> of WORKS_ON — its value depends on a particular <em>(employee, project)</em> combination, not on either entity alone.</p>
+        <div class="callout note">
+          <div class="label">📌 Placement rule</div>
+          Relationship attributes are mostly used with <strong>M:N</strong> relationships. In a <strong>1:N</strong> relationship, the attribute can be moved to the entity type on the <strong>N-side</strong>.
+        </div>
+
+        <h3>11. Weak Entity Types — الكيانات الضعيفة</h3>
+        <div class="callout def">
+          <div class="label">📘 Definition</div>
+          A <span class="en-term">weak entity type</span> has <strong>no key attribute</strong> of its own and is <strong>identification-dependent</strong> on another (owner) entity type. It must participate in an <span class="en-term">identifying relationship</span> with its <span class="en-term">owner / identifying entity type</span>. It is identified by combining its <span class="en-term">partial key</span> with the owner entity it relates to.
+        </div>
+        <p><strong>Example:</strong> <span class="en-term">DEPENDENT</span> is a weak entity. Its <em>Name</em> is the <strong>partial key</strong>; <span class="en-term">EMPLOYEE</span> is the identifying (owner) entity via the identifying relationship <span class="en-term">DEPENDENT_OF</span>. A dependent is identified by (the employee + the dependent’s first name).</p>
+        <div class="callout note">
+          <div class="label">🏦 Worked example from notes — BANK</div>
+          Strong entities: BANK, ACCOUNT, CUSTOMER, LOAN. Weak entity: <strong>BANK-BRANCH</strong>, partial key <strong>BranchNo</strong>, identifying relationship <strong>BRANCHES</strong>. The same BranchNo may repeat under different BANKs, so the full identifier = (BANK Code + BranchNo).
+        </div>
+        <div class="ar">
+          <b>الكيان الضعيف</b> <span class="en">weak entity</span> ما عنده مفتاح خاص فيه، ويعتمد في تعريفه على كيان آخر (المالك) عبر <b>علاقة معرِّفة</b> <span class="en">identifying relationship</span>. نعرّفه بدمج <b>المفتاح الجزئي</b> <span class="en">partial key</span> مع الكيان المالك. مثال: <span class="en">DEPENDENT</span> ضعيف، مفتاحه الجزئي هو الاسم، ومالكه <span class="en">EMPLOYEE</span> عبر <span class="en">DEPENDENT_OF</span>. يُرسم بمستطيل ومعيّن مزدوجين.
+        </div>
+
+        <h3>12. The UNIVERSITY Example — (min,max) practice</h3>
+        <p>A second schema (colleges, departments, courses, sections, instructors, students). The instructor notes give exact (min,max) constraints — great for practice:</p>
+        <table>
+          <tr><th>Relationship</th><th>Constraint</th></tr>
+          <tr><td>DEPT — OFFERS — COURSE</td><td>DEPT (0,N); COURSE (1,1) — each course offered by exactly one dept</td></tr>
+          <tr><td>DEPT — EMPLOYS — INSTRUCTOR</td><td>DEPT (0,N); INSTRUCTOR (0,N) — instructor may work for several depts</td></tr>
+          <tr><td>DEPT — CHAIR — INSTRUCTOR</td><td>DEPT (1,1) — each dept has exactly one chair; INSTRUCTOR (0,1)</td></tr>
+          <tr><td>COURSE — SECS — SECTION</td><td>COURSE (0,N); SECTION (1,1) — each section belongs to one course</td></tr>
+          <tr><td>STUDENT — TAKES — SECTION</td><td>STUDENT (0,N); SECTION (5,N) — a section needs at least 5 students</td></tr>
+          <tr><td>INSTRUCTOR — TEACHES — SECTION</td><td>INSTRUCTOR (0,N); SECTION (1,1) — one instructor per section</td></tr>
+          <tr><td>COLLEGE — ADMINS — DEPT</td><td>COLLEGE (0,N); DEPT (1,1) — each dept belongs to exactly one college</td></tr>
+        </table>
+
+        <h3>13. Common-Sense Cardinality Ratios — تمرين تقدير النسب</h3>
+        <p>From exercise 3.27 — decide the ratio from real-world meaning (excellent quiz prep):</p>
+        <table>
+          <tr><th>Entity 1</th><th>Ratio</th><th>Entity 2</th></tr>
+          <tr><td>Student</td><td>1 : N</td><td>SocialSecurityCard (each card → one student)</td></tr>
+          <tr><td>Student</td><td>M : N</td><td>Teacher</td></tr>
+          <tr><td>Classroom</td><td>M : N</td><td>Wall (shared by adjacent rooms)</td></tr>
+          <tr><td>Country</td><td>1 : 1</td><td>CurrentPresident</td></tr>
+          <tr><td>Course</td><td>M : N</td><td>TextBook</td></tr>
+          <tr><td>Item</td><td>M : N</td><td>Order</td></tr>
+          <tr><td>Class</td><td>N : 1</td><td>Instructor (one instructor per class)</td></tr>
+          <tr><td>Instructor</td><td>1 : 1</td><td>Office</td></tr>
+          <tr><td>Auction item</td><td>1 : N</td><td>Bid (a bid is unique to an item)</td></tr>
+        </table>
+
+        <h3>14. Practice Exercises — تمارين للتطبيق</h3>
+        <div class="callout note">
+          <div class="label">✏️ Draw the ERD for each (then map to relational in Ch 9)</div>
+          <ol>
+            <li><strong>Hotel:</strong> employees book rooms for customers; employee(name, job#, DOB, salary, <em>age derived</em>); customer(name, cust#, ID#); each reservation books exactly one room (date, expiry, room#, series); customers buy food (code, name, price, summary).</li>
+            <li><strong>Project management:</strong> projects split into sub-tasks; project(name, number, start, end, budget, <em>completion rate derived</em>); task has <strong>no primary key</strong> (→ weak entity); sponsors (name, number, multi-valued phone); a project may have many sponsors; employees staff projects, each employee has one manager; each task done by many employees with hours tracked.</li>
+            <li><strong>Training center:</strong> trainees register courses; trainee(name, number, age, multi-valued phone); course(name, number, hours, price, start, end); trainer(name, number, salary); trainee in many courses with a <em>result</em> (pass/fail); a trainer teaches many courses but a course has one trainer.</li>
+            <li><strong>Medical center:</strong> doctor examines patient, requests several analyses; doctor(name, job# unique, specialization, degree); patient(name, patient# unique, visit date); analysis(name, test# unique, cost); registration record(series, room#, entry date, exit date).</li>
+          </ol>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 3 Summary — الخلاصة</div>
+          The ER model has three building blocks: <strong>entities</strong> (typed into entity types, with key attributes), <strong>attributes</strong> (simple/composite/multivalued/derived), and <strong>relationships</strong> (typed, with a degree). Constraints are <strong>cardinality ratio</strong> (max: 1:1/1:N/M:N) and <strong>participation</strong> (min: total/partial), expressible as <strong>(min,max)</strong>. Special cases: <strong>recursive</strong> relationships (roles), <strong>relationship attributes</strong>, and <strong>weak entities</strong> (partial key + identifying relationship + owner).
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 3  ========================= -->
+      <!-- >>> NEXT: Chapter 4 (Enhanced ER / EER) — type "Continue" <<< -->
+
+
+<!-- ============================================================ -->
+      <!-- ====================  CHAPTER 4  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter" id="ch4">
+        <div class="ch-head">
+          <div class="kicker">Unit 4 · Conceptual Design</div>
+          <h2>The Enhanced Entity-Relationship (EER) Model</h2>
+          <div class="ref">Textbook: Chapter 4 · Slides (Week 6)</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          Why EER · Subclasses, Superclasses &amp; Inheritance · IS-A relationships · Specialization &amp; Generalization · Constraints (predicate/attribute/user-defined; disjoint/overlapping; total/partial) · Hierarchies, Lattices &amp; Shared Subclasses · Category / Union Type.
+        </div>
+
+        <h3>1. Why EER? — لماذا EER؟</h3>
+        <p>The <span class="en-term">Enhanced ER (EER)</span> model includes <strong>all</strong> the concepts of the ER model, and adds more to design <strong>more accurate</strong> schemas that reflect data properties &amp; constraints more precisely — for complex requirements. The new concepts are: <strong>subclasses &amp; superclasses</strong>, <strong>specialization &amp; generalization</strong>, <strong>category / union type</strong>, and <strong>attribute &amp; relationship inheritance</strong>.</p>
+        <div class="ar">
+          نموذج <span class="en">EER</span> يضيف على نموذج <span class="en">ER</span> العادي مفاهيم تخلّينا نصمّم مخططات <b>أدق</b>: الأصناف الفرعية والرئيسية <span class="en">subclasses/superclasses</span>، والتخصيص والتعميم <span class="en">specialization/generalization</span>، والفئة/نوع الاتحاد <span class="en">category/union</span>، والوراثة <span class="en">inheritance</span>.
+        </div>
+
+        <h3>2. Subclasses, Superclasses &amp; the IS-A Relationship</h3>
+        <p>An entity type may have meaningful <strong>subgroupings</strong>. Example: <span class="en-term">EMPLOYEE</span> can be grouped into <span class="pill">SECRETARY</span><span class="pill">ENGINEER</span><span class="pill">TECHNICIAN</span> (by job), <span class="pill">MANAGER</span>, or <span class="pill">SALARIED_EMPLOYEE</span><span class="pill">HOURLY_EMPLOYEE</span> (by pay method).</p>
+        <ul>
+          <li>Each subgrouping is a <span class="en-term">subclass</span>; EMPLOYEE is the <span class="en-term">superclass</span>.</li>
+          <li>These are <span class="en-term">IS-A relationships</span>: “SECRETARY IS-A EMPLOYEE”.</li>
+        </ul>
+        <div class="callout def">
+          <div class="label">📘 The four golden rules of subclass membership</div>
+          <ol>
+            <li>A subclass member is the <strong>same real-world entity</strong> as a superclass member — in a distinct, specific <strong>role</strong>.</li>
+            <li>An entity <strong>cannot</strong> exist as a subclass member only — it must also be a member of the <strong>superclass</strong>.</li>
+            <li>A superclass member <strong>may</strong> belong to <strong>any number</strong> of subclasses (e.g. an employee who is a salaried engineering manager belongs to MANAGER + ENGINEER + SALARIED_EMPLOYEE).</li>
+            <li>It is <strong>not</strong> necessary for every superclass entity to be a member of some subclass.</li>
+          </ol>
+        </div>
+
+        <h4>Attribute &amp; Relationship Inheritance — الوراثة</h4>
+        <p>A subclass entity <strong>inherits</strong> all attributes <em>and</em> all relationships of the superclass. So every SECRETARY has Name, SSN, … inherited from EMPLOYEE, plus its own.</p>
+        <div class="ar">
+          الصنف الفرعي <span class="en">subclass</span> <b>يرث</b> كل صفات وعلاقات الصنف الرئيسي <span class="en">superclass</span>. العضو في الصنف الفرعي هو <b>نفس الكيان الحقيقي</b> لكن في دور محدّد، ولازم يكون عضوًا في الرئيسي أيضًا، وممكن ينتمي لأكثر من صنف فرعي. وليس شرطًا أن كل عضو في الرئيسي ينتمي لصنف فرعي.
+        </div>
+
+        <h3>3. Specialization vs. Generalization — التخصيص والتعميم</h3>
+        <table>
+          <tr><th></th><th>Specialization (تخصيص)</th><th>Generalization (تعميم)</th></tr>
+          <tr><td>Process</td><td>Define a set of <strong>subclasses</strong> of a superclass, based on a distinguishing characteristic.</td><td>Define a generalized <strong>superclass</strong> from existing entity types that share common properties.</td></tr>
+          <tr><td>Direction</td><td><strong>Top-down</strong> conceptual refinement.</td><td><strong>Bottom-up</strong> conceptual synthesis.</td></tr>
+          <tr><td>Example</td><td>{SECRETARY, ENGINEER, TECHNICIAN} is a specialization of EMPLOYEE by <em>job type</em>.</td><td>Car, Truck, Motorcycle → generalized into <strong>Vehicle</strong> (Vehicle_ID, Brand, Model).</td></tr>
+        </table>
+        <p>The subclass adds <span class="en-term">specific / local attributes</span> (e.g. <em>TypingSpeed</em> of SECRETARY) and can take part in <span class="en-term">specific relationships</span> (e.g. <em>BELONGS_TO</em> of HOURLY_EMPLOYEE).</p>
+        <div class="callout note">
+          <div class="label">🚗 Generalization example (from slides)</div>
+          Before: Car(Vehicle_ID, Brand, Model, <em>Number_of_Doors</em>), Truck(…, <em>Load_Capacity</em>), Motorcycle(…, <em>Engine_Capacity</em>).<br>
+          After: <strong>Vehicle</strong>(Vehicle_ID, Brand, Model) with subclasses keeping only their specific attributes.
+        </div>
+        <div class="ar">
+          <b>التخصيص</b> <span class="en">specialization</span> من <b>أعلى لأسفل</b>: نبدأ بصنف رئيسي ونشتق منه أصنافًا فرعية حسب خاصية مميّزة. <b>التعميم</b> <span class="en">generalization</span> من <b>أسفل لأعلى</b>: نبدأ بعدة كيانات متشابهة ونجمعها في صنف رئيسي عام. الصنف الفرعي يضيف صفاته الخاصة <span class="en">local attributes</span>.
+        </div>
+
+        <h3>4. Constraints on Specialization / Generalization — القيود</h3>
+
+        <h4>A) How membership is determined</h4>
+        <table>
+          <tr><th>Type</th><th>Meaning</th><th>Example</th></tr>
+          <tr><td><span class="en-term">Predicate-defined</span> (condition-defined)</td><td>A <strong>condition</strong> decides membership; written next to the line.</td><td>HighPaidEmployee: <code>Salary &gt; 100,000</code></td></tr>
+          <tr><td><span class="en-term">Attribute-defined</span></td><td>All subclasses use a condition on the <strong>same</strong> attribute (the <em>defining attribute</em>).</td><td><em>JobType</em> defines {SECRETARY, TECHNICIAN, ENGINEER}; <em>EnrollmentType</em> defines {FullTime, PartTime} student</td></tr>
+          <tr><td><span class="en-term">User-defined</span></td><td><strong>No condition</strong> — the user manually assigns each entity to a subclass.</td><td>Membership chosen individually</td></tr>
+        </table>
+
+        <h4>B) The two basic constraints</h4>
+        <div class="callout def">
+          <div class="label">📘 Disjointness &amp; Completeness</div>
+          <ul>
+            <li><span class="en-term">Disjointness</span> — <strong>Disjoint (d):</strong> an entity is in <em>at most one</em> subclass. <strong>Overlapping (o):</strong> an entity may be in <em>more than one</em> subclass.</li>
+            <li><span class="en-term">Completeness</span> — <strong>Total (double line):</strong> every superclass entity <em>must</em> belong to some subclass. <strong>Partial (single line):</strong> an entity <em>may</em> belong to none.</li>
+          </ul>
+        </div>
+        <p>This gives <strong>four combinations</strong>:</p>
+        <table>
+          <tr><th></th><th>Disjoint (d)</th><th>Overlapping (o)</th></tr>
+          <tr><td><strong>Total</strong> (double line)</td><td>Disjoint + Total</td><td>Overlapping + Total — e.g. a PART that is manufactured and/or purchased</td></tr>
+          <tr><td><strong>Partial</strong> (single line)</td><td>Disjoint + Partial</td><td>Overlapping + Partial</td></tr>
+        </table>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip</div>
+          <strong>Generalization is usually total</strong>, because the superclass is <em>derived from</em> its subclasses (so every superclass entity came from one). Remember the symbols: <code>d</code> = disjoint, <code>o</code> = overlapping, double line = total, single line = partial.
+        </div>
+        <div class="ar">
+          قيدان أساسيان: <b>التفكيك</b> <span class="en">disjointness</span> — إمّا <span class="en">disjoint (d)</span> (الكيان في صنف واحد فقط) أو <span class="en">overlapping (o)</span> (ممكن في أكثر من صنف). و<b>الاكتمال</b> <span class="en">completeness</span> — إمّا <span class="en">total</span> (خط مزدوج: كل كيان لازم ينتمي لصنف فرعي) أو <span class="en">partial</span> (خط مفرد: ممكن ما ينتمي لأي صنف). تنتج ٤ تركيبات. والتعميم عادةً يكون <b>total</b>.
+        </div>
+
+        <h3>5. Hierarchies, Lattices &amp; Shared Subclasses</h3>
+        <p>A subclass may itself have further subclasses:</p>
+        <ul>
+          <li><span class="en-term">Hierarchy</span> — every subclass has <strong>only one</strong> superclass → <strong>single inheritance</strong> (a tree).</li>
+          <li><span class="en-term">Lattice</span> — a subclass can have <strong>more than one</strong> superclass → <strong>multiple inheritance</strong>.</li>
+          <li><span class="en-term">Shared subclass</span> — a subclass with more than one superclass (e.g. <em>Engineering Manager</em> from MANAGER + ENGINEER + SALARIED_EMPLOYEE). It inherits from <strong>all</strong> predecessor superclasses.</li>
+        </ul>
+        <p>Building direction: specialization = <strong>top-down</strong> refinement; generalization = <strong>bottom-up</strong> synthesis. In practice both are combined.</p>
+
+        <h3>6. Category / Union Type — الفئة / نوع الاتحاد</h3>
+        <div class="callout def">
+          <div class="label">📘 Definition</div>
+          A <span class="en-term">category</span> (or <span class="en-term">union type</span>) is a subclass whose members are a subset of the <strong>UNION of entities from several distinct entity types</strong> (shown with a <strong>∪</strong> symbol). It differs from a shared subclass: a shared subclass member belongs to <em>all</em> its superclasses (intersection), while a category member belongs to <em>only one</em> of the superclasses (union). Example: an OWNER may be a PERSON, a BANK, <em>or</em> a COMPANY.
+        </div>
+        <div class="ar">
+          <b>الفئة / نوع الاتحاد</b> <span class="en">category/union</span> هي صنف فرعي أعضاؤه مجموعة جزئية من <b>اتحاد</b> كيانات مختلفة (نرمز لها بـ <span class="en">∪</span>). الفرق عن <span class="en">shared subclass</span>: في الـ<span class="en">shared subclass</span> العضو ينتمي لكل الأصناف الرئيسية (تقاطع)، أمّا في الـ<span class="en">category</span> فالعضو ينتمي لواحد فقط منها (اتحاد). مثال: المالك <span class="en">OWNER</span> ممكن يكون شخصًا أو بنكًا أو شركة.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 4 Summary — الخلاصة</div>
+          EER = ER + <strong>subclasses/superclasses</strong> with <strong>inheritance</strong> (IS-A). <strong>Specialization</strong> is top-down; <strong>generalization</strong> is bottom-up. Membership is predicate-, attribute-, or user-defined. Two constraints — <strong>disjoint(d)/overlapping(o)</strong> and <strong>total/partial</strong> — give four combinations. Subclasses form <strong>hierarchies</strong> (single inheritance) or <strong>lattices</strong> (multiple inheritance, via shared subclasses). A <strong>category/union type</strong> models a subset of the union of distinct entity types.
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 4  ========================= -->
+      <!-- >>> NEXT: Chapter 5 (Relational Data Model) — type "Continue" <<< -->
+
+<!-- ============================================================ -->
+      <!-- ====================  CHAPTER 5  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter" id="ch5">
+        <div class="ch-head">
+          <div class="kicker">Unit 5 · Relational Model</div>
+          <h2>The Relational Data Model &amp; Relational Database Constraints</h2>
+          <div class="ref">Textbook: Chapter 5 · Slides (Week 3) + Notes</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          Relational Model Concepts (relation, tuple, attribute, domain, schema, state) · Categories of Constraints · The four Relational Integrity Constraints (Key, Entity, Referential, Domain) · Keys (super/candidate/primary) · Update Operations &amp; Constraint Violations.
+        </div>
+
+        <h3>1. Relational Model Concepts — مفاهيم النموذج العلائقي</h3>
+        <p>The relational model is based on the concept of a <span class="en-term">relation</span> (= a <strong>table</strong>). Its strength comes from a formal foundation in the mathematical theory of <strong>sets</strong>. Informally, a relation looks like a table of values: rows of facts about real-world entities/relationships, with labeled columns.</p>
+
+        <div class="callout def">
+          <div class="label">📘 Informal ↔ Formal terms (memorise!)</div>
+          <table>
+            <tr><th>Informal Term</th><th>Formal Term</th></tr>
+            <tr><td>Table</td><td>Relation</td></tr>
+            <tr><td>Column header</td><td>Attribute</td></tr>
+            <tr><td>All possible column values</td><td>Domain</td></tr>
+            <tr><td>Row</td><td>Tuple</td></tr>
+            <tr><td>Table definition</td><td>Schema of a relation</td></tr>
+            <tr><td>Populated table</td><td>State of the relation</td></tr>
+          </table>
+        </div>
+
+        <h4>Formal Definitions — التعريفات الرسمية</h4>
+        <ul>
+          <li><span class="en-term">Schema</span> — denoted <code>R(A₁, A₂, …, Aₙ)</code>. Example: <code>CUSTOMER(Cust-id, Cust-name, Address, Phone#)</code>.</li>
+          <li><span class="en-term">Tuple</span> — an <strong>ordered</strong> set of values in angle brackets; a row over <em>n</em> attributes is an <em>n-tuple</em>. e.g. <code>&lt;632895, "John Smith", "101 Main St…", "(404) 894-2000"&gt;</code> is a 4-tuple. A relation is a <strong>set</strong> of such tuples.</li>
+          <li><span class="en-term">Domain</span> — a logical definition + a data type/format (e.g. USA phone numbers = <code>(ddd)ddd-dddd</code>). The <strong>attribute name</strong> designates the <em>role</em> a domain plays (the same domain <em>Date</em> can be both <em>Invoice-date</em> and <em>Payment-date</em>).</li>
+          <li><span class="en-term">Relation state</span> — a <strong>subset of the Cartesian product</strong> of the domains of its attributes; the current content at a point in time. e.g. <code>dom(Cust-name) = varchar(25)</code>.</li>
+        </ul>
+        <div class="ar">
+          <b>Relation</b> = جدول، و<b>tuple</b> = صف، و<b>attribute</b> = عمود، و<b>domain</b> = مجموعة القيم المسموحة لكل عمود. الـ<span class="en">schema</span> هو وصف الجدول <span class="en">R(A₁,…,Aₙ)</span>، والـ<span class="en">state</span> هو محتوى الجدول الفعلي في لحظة معيّنة وهو <b>مجموعة جزئية من الضرب الديكارتي</b> لنطاقات الصفات. ملاحظة: نفس الـ<span class="en">domain</span> (مثل التاريخ) ممكن يلعب أدوارًا مختلفة حسب اسم الصفة.
+        </div>
+
+        <h3>2. Categories of Constraints — تصنيفات القيود</h3>
+        <table>
+          <tr><th>Category</th><th>Source</th><th>Example</th></tr>
+          <tr><td><span class="en-term">Inherent / Implicit</span></td><td>Built into the data model itself; auto-enforced.</td><td>No duplicate tuples in a relation; PK uniqueness; NOT NULL.</td></tr>
+          <tr><td><span class="en-term">Schema-based / Explicit</span></td><td>Expressed directly in the schema by the designer.</td><td>Each employee belongs to only one department; a film has one director.</td></tr>
+          <tr><td><span class="en-term">Application-based / Semantic</span></td><td>Business rules <strong>not</strong> expressible in the schema; enforced by application code.</td><td>Order total &gt; 0; salary raise ≤ last year’s.</td></tr>
+        </table>
+
+        <h3>3. The Four Relational Integrity Constraints — قيود التكامل الأربعة</h3>
+        <p>These are the explicit, schema-based constraints that must hold on <strong>all valid relation states</strong>:</p>
+        <ol>
+          <li><span class="en-term">Key constraint</span> — keys must be unique (no two tuples share a key value).</li>
+          <li><span class="en-term">Entity integrity</span> — no primary-key value can be <strong>NULL</strong>.</li>
+          <li><span class="en-term">Referential integrity</span> — between two relations; a foreign key must match an existing primary key (or be null).</li>
+          <li><span class="en-term">Domain constraint</span> — every value must come from its attribute’s domain (or null, if allowed).</li>
+        </ol>
+
+        <h3>4. Keys in Depth — المفاتيح بالتفصيل</h3>
+        <div class="callout def">
+          <div class="label">📘 The key hierarchy</div>
+          <ul>
+            <li><span class="en-term">Superkey (SK)</span> — <strong>any</strong> set of attributes that uniquely identifies a tuple — even with unnecessary extra attributes. Formally: for any two distinct tuples <code>t₁[SK] ≠ t₂[SK]</code>.</li>
+            <li><span class="en-term">Key</span> — a <strong>minimal</strong> superkey: removing any attribute breaks uniqueness. (No proper subset is a superkey.)</li>
+            <li><span class="en-term">Candidate key</span> — each of the (possibly several) keys of a relation.</li>
+            <li><span class="en-term">Primary key (PK)</span> — the one candidate key chosen to identify tuples; <strong>cannot be NULL</strong>; its attributes are <strong>underlined</strong>.</li>
+          </ul>
+        </div>
+        <p><strong>CAR example:</strong> <code>CAR(State, Reg#, SerialNo, Make, Model, Year)</code> has two candidate keys: <code>{State, Reg#}</code> and <code>{SerialNo}</code> — both are also superkeys. <code>{SerialNo, Make}</code> is a superkey <em>but not a key</em> (not minimal). <strong>Rule:</strong> any key is a superkey (not vice-versa); any set including a key is a superkey; a <em>minimal</em> superkey is a key. General guideline: choose the <strong>smallest</strong> candidate key as PK.</p>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip — every relationship of keys</div>
+          Primary Key ⊆ Candidate Keys ⊆ Keys ⊆ Superkeys. A <strong>key is a minimal superkey</strong>; a <strong>PK is one chosen candidate key</strong> that also can’t be null.
+        </div>
+        <div class="ar">
+          <b>Superkey</b>: أي مجموعة صفات تميّز الصف بشكل فريد (حتى لو فيها صفات زائدة). <b>Key</b>: <span class="en">superkey</span> <b>أصغري</b> — لو شلت أي صفة منه يفقد التميّز. <b>Candidate key</b>: كل مفتاح من المفاتيح الممكنة. <b>Primary key</b>: المفتاح المختار للتعريف، ولا يقبل <span class="en">NULL</span>، ونضع تحته خطًا. القاعدة: كل <span class="en">key</span> هو <span class="en">superkey</span> والعكس غير صحيح.
+        </div>
+
+        <h3>5. Entity Integrity — تكامل الكيان</h3>
+        <p>The primary-key attributes of every relation <strong>cannot have NULL</strong> values in any tuple: <code>t[PK] ≠ null</code>. If the PK is composite, <strong>none</strong> of its attributes may be null. (Other non-PK attributes <em>may</em> still be constrained NOT NULL too.)</p>
+
+        <h3>6. Referential Integrity — التكامل المرجعي</h3>
+        <p>The only constraint that involves <strong>two</strong> relations. Tuples in the <span class="en-term">referencing relation</span> R1 have <span class="en-term">foreign key (FK)</span> attributes that reference the <span class="en-term">primary key</span> of the <span class="en-term">referenced relation</span> R2.</p>
+        <div class="callout def">
+          <div class="label">📘 The FK rule</div>
+          The value of FK in R1 must be <strong>either</strong>:
+          <ol>
+            <li>an existing PK value in R2 (<code>t₁[FK] = t₂[PK]</code>), <strong>or</strong></li>
+            <li><strong>NULL</strong> — but only if FK is <em>not part of</em> R1’s own primary key.</li>
+          </ol>
+          Shown in a schema diagram as a directed arc from <code>R1.FK → R2.PK</code>.
+        </div>
+        <div class="ar">
+          <b>التكامل المرجعي</b> هو القيد الوحيد بين <b>جدولين</b>. الجدول <span class="en">R1</span> (المُشير) فيه <b>مفتاح أجنبي</b> <span class="en">FK</span> يشير إلى المفتاح الأساسي <span class="en">PK</span> في الجدول <span class="en">R2</span> (المُشار إليه). قيمة الـ<span class="en">FK</span> لازم تكون إمّا <b>قيمة موجودة</b> فعلًا في <span class="en">PK</span> الجدول الآخر، أو <b>NULL</b> (بشرط ألا يكون الـ<span class="en">FK</span> جزءًا من المفتاح الأساسي لجدوله).
+        </div>
+        <p>A <span class="en-term">relational database schema</span> is the set <em>S</em> of all relation schemas in the database (e.g. the COMPANY schema has 6 relations connected by referential-integrity arcs).</p>
+
+        <h4>Other Constraints</h4>
+        <p><span class="en-term">Semantic integrity constraints</span> are business rules that can’t be expressed in the model (e.g. “max hours per employee across all projects = 56/week”). SQL-99 expresses some via <code>CREATE TRIGGER</code> and <code>CREATE ASSERTION</code>. Keys, NULL permissions, candidate keys (UNIQUE), foreign keys, and referential integrity are all expressed in the SQL <code>CREATE TABLE</code> statement.</p>
+
+        <h3>7. Update Operations &amp; Constraint Violations — عمليات التحديث وانتهاك القيود</h3>
+        <p>Three update operations: <span class="en-term">INSERT</span>, <span class="en-term">DELETE</span>, <span class="en-term">MODIFY (UPDATE)</span>. Updates must not violate integrity constraints; they may propagate automatically to maintain integrity.</p>
+        <table>
+          <tr><th>Operation</th><th>Can violate…</th></tr>
+          <tr><td><strong>INSERT</strong></td><td><strong>Any</strong> constraint: Domain (wrong type), Key (duplicate key), Referential (FK with no matching PK), Entity integrity (PK is null).</td></tr>
+          <tr><td><strong>DELETE</strong></td><td><strong>Only Referential integrity</strong> — if the deleted tuple’s PK is referenced elsewhere.</td></tr>
+          <tr><td><strong>UPDATE</strong></td><td>Domain &amp; NOT NULL always; updating PK ≈ DELETE+INSERT; updating FK may violate referential; updating an ordinary attribute → only domain.</td></tr>
+        </table>
+        <div class="callout def">
+          <div class="label">📘 Actions on violation</div>
+          <ul>
+            <li><span class="en-term">RESTRICT / REJECT</span> — cancel the offending operation.</li>
+            <li><span class="en-term">CASCADE</span> — propagate the change to referencing tuples.</li>
+            <li><span class="en-term">SET NULL</span> — set the referencing foreign keys to NULL.</li>
+            <li>Or run a user-specified error-correction routine.</li>
+          </ul>
+          One of these must be specified per foreign key during design.
+        </div>
+        <div class="ar">
+          ثلاث عمليات: <span class="en">INSERT, DELETE, UPDATE</span>. الـ<span class="en">INSERT</span> ممكن ينتهك <b>أي</b> قيد. الـ<span class="en">DELETE</span> ينتهك <b>التكامل المرجعي فقط</b> (لو الصف مرجوع له من جدول ثاني). عند الانتهاك نختار: <span class="en">RESTRICT</span> (رفض)، <span class="en">CASCADE</span> (تمرير التغيير)، أو <span class="en">SET NULL</span> (تصفير المفاتيح الأجنبية).
+        </div>
+
+        <h3>8. Practice Exercises — تمارين</h3>
+        <div class="callout note">
+          <div class="label">✏️ Exercise A — Keys</div>
+          For <code>STUDENT(Student-ID, SSN, Name, Major, GPA)</code> identify keys.<br>
+          <strong>Superkeys:</strong> {Student-ID}, {SSN}, {Student-ID, Name}, {SSN, Major, GPA}, …<br>
+          <strong>Candidate keys:</strong> {Student-ID}, {SSN}.<br>
+          <strong>Primary key:</strong> Student-ID (commonly chosen).
+        </div>
+        <div class="callout note">
+          <div class="label">✏️ Exercise B — Foreign Keys (Exercise 5.15)</div>
+          For the schema below, the <strong>four foreign keys</strong> are:
+          <pre>STUDENT(<u>SSN</u>, Name, Major, Bdate)
+COURSE(<u>CourseNo</u>, Cname, Dept)
+ENROLL(<u>SSN, CourseNo, Quarter</u>, Grade)
+BOOK_ADOPTION(<u>CourseNo, Quarter</u>, Book_ISBN)
+TEXT(<u>Book_ISBN</u>, Book_Title, Publisher, Author)</pre>
+          1) ENROLL.SSN → STUDENT &nbsp; 2) ENROLL.CourseNo → COURSE<br>
+          3) BOOK_ADOPTION.CourseNo → COURSE &nbsp; 4) BOOK_ADOPTION.Book_ISBN → TEXT
+        </div>
+        <div class="callout note">
+          <div class="label">✏️ Exercise C — Which constraint does each INSERT violate?</div>
+          Given the COMPANY EMPLOYEE table, evaluate inserts like a row with a <strong>null</strong> in the PK position (→ Entity integrity), a <strong>duplicate SSN</strong> (→ Key), an <strong>invalid date</strong> like 13/8/1984 (→ Domain), or a <strong>Dno/Super_ssn that doesn’t exist</strong> (→ Referential integrity).
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 5 Summary — الخلاصة</div>
+          A relation = a set of tuples over attributes drawn from domains; its <strong>schema</strong> is the description, its <strong>state</strong> is the current content. Constraints come in three categories (implicit/explicit/semantic). The four model constraints are <strong>Key, Entity integrity (PK ≠ null), Referential integrity (FK matches PK or null), and Domain</strong>. Keys form the hierarchy super → candidate → primary. Updates (INSERT/DELETE/UPDATE) must preserve integrity, with RESTRICT / CASCADE / SET NULL as remedies.
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 5  ========================= -->
+      <!-- >>> NEXT: Chapter 6 (Basic SQL) — type "Continue" <<<       -->
+
+<!-- ============================================================ -->
+      <!-- ====================  CHAPTER 6  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter" id="ch6">
+        <div class="ch-head">
+          <div class="kicker">Unit 6 · Languages</div>
+          <h2>Basic SQL</h2>
+          <div class="ref">Textbook: Chapter 6 · Slides (Week 8) + Detailed Notes</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          SQL Data Definition &amp; Data Types · Specifying Constraints in SQL · Basic Retrieval (SELECT-FROM-WHERE) · INSERT, DELETE &amp; UPDATE.
+        </div>
+
+        <h3>1. What is SQL? — ما هي SQL؟</h3>
+        <p>SQL came from the word <strong>“SEQUEL”</strong> (from the paper <em>“SEQUEL to SQUARE”</em> by Chamberlin &amp; Boyce). IBM couldn’t copyright SEQUEL, so they abbreviated it to <strong>SQL</strong> — now popularly <strong>Structured Query Language</strong>. In SQL we say <strong>table / row / column</strong> for the formal terms <strong>relation / tuple / attribute</strong>.</p>
+
+        <h3>2. Data Definition (DDL) — تعريف البيانات</h3>
+        <p>DDL is used to <span class="en-term">CREATE</span>, <span class="en-term">DROP</span>, and <span class="en-term">ALTER</span> table descriptions.</p>
+
+        <h4>CREATE TABLE &amp; Data Types</h4>
+        <p>Common data types: <code>INTEGER</code>, <code>FLOAT</code>, <code>DECIMAL(i,j)</code>, <code>CHAR(n)</code>, <code>VARCHAR(n)</code>, plus <code>DATE</code> (yyyy-mm-dd), <code>TIME</code> (hh:mm:ss), <code>TIMESTAMP</code> (date+time), and <code>INTERVAL</code> (a relative value).</p>
+        <pre>CREATE TABLE DEPARTMENT (
+    DNAME         VARCHAR(10) NOT NULL,
+    DNUMBER       INTEGER     NOT NULL,
+    MGRSSN        CHAR(9),
+    MGRSTARTDATE  CHAR(9) );</pre>
+
+        <h4>Specifying Constraints — PRIMARY KEY, UNIQUE, FOREIGN KEY</h4>
+        <pre>CREATE TABLE DEPT (
+    DNAME         VARCHAR(10) NOT NULL,
+    DNUMBER       INTEGER     NOT NULL,
+    MGRSSN        CHAR(9),
+    MGRSTARTDATE  CHAR(9),
+    PRIMARY KEY (DNUMBER),
+    UNIQUE      (DNAME),
+    FOREIGN KEY (MGRSSN) REFERENCES EMP );</pre>
+        <ul>
+          <li><span class="en-term">PRIMARY KEY</span> — the primary key (cannot be null).</li>
+          <li><span class="en-term">UNIQUE</span> — a secondary/candidate key (no duplicates).</li>
+          <li><span class="en-term">FOREIGN KEY … REFERENCES</span> — referential integrity.</li>
+          <li><span class="en-term">NOT NULL</span> / <span class="en-term">DEFAULT</span> — value constraints.</li>
+        </ul>
+
+        <h4>Referential Integrity Options</h4>
+        <p>On a foreign key we can specify <code>ON DELETE</code> / <code>ON UPDATE</code> actions: <span class="en-term">RESTRICT</span>, <span class="en-term">CASCADE</span>, <span class="en-term">SET NULL</span>, or <span class="en-term">SET DEFAULT</span>.</p>
+        <pre>CREATE TABLE EMP (
+    ENAME    VARCHAR(30) NOT NULL,
+    ESSN     CHAR(9),
+    BDATE    DATE,
+    DNO      INTEGER DEFAULT 1,
+    SUPERSSN CHAR(9),
+    PRIMARY KEY (ESSN),
+    FOREIGN KEY (DNO)      REFERENCES DEPT
+        ON DELETE SET DEFAULT ON UPDATE CASCADE,
+    FOREIGN KEY (SUPERSSN) REFERENCES EMP
+        ON DELETE SET NULL    ON UPDATE CASCADE );</pre>
+
+        <h4>DROP, ALTER, CREATE SCHEMA</h4>
+        <pre>DROP TABLE DEPENDENT;            -- removes the table & its definition
+
+ALTER TABLE EMPLOYEE ADD JOB VARCHAR(12);   -- new column starts as NULL</pre>
+        <div class="callout note">
+          <div class="label">📌 Note</div>
+          A column added by <code>ALTER TABLE ADD</code> starts as <strong>NULL</strong> in all rows, so <strong>NOT NULL is not allowed</strong> for it. Users must then fill it via <code>UPDATE</code>. <code>CREATE SCHEMA</code> names a whole database schema.
+        </div>
+        <div class="ar">
+          الـ<span class="en">DDL</span> فيها <span class="en">CREATE / DROP / ALTER</span>. نحدّد أنواع البيانات (<span class="en">INTEGER, VARCHAR(n), CHAR(n), DECIMAL(i,j), DATE…</span>) والقيود: <span class="en">PRIMARY KEY</span> (مفتاح أساسي)، <span class="en">UNIQUE</span> (مفتاح مرشّح)، <span class="en">FOREIGN KEY … REFERENCES</span> (مفتاح أجنبي). ونحدّد إجراءات التكامل المرجعي <span class="en">ON DELETE / ON UPDATE</span>: <span class="en">RESTRICT, CASCADE, SET NULL, SET DEFAULT</span>. العمود المُضاف بـ<span class="en">ALTER … ADD</span> يبدأ بقيمة <span class="en">NULL</span> لذلك ما يقبل <span class="en">NOT NULL</span>.
+        </div>
+
+        <h3>3. Basic Retrieval — SELECT-FROM-WHERE</h3>
+        <div class="callout def">
+          <div class="label">📘 The basic query block</div>
+          <pre>SELECT  &lt;attribute list&gt;      -- projection attributes (which columns)
+FROM    &lt;table list&gt;          -- relations needed
+WHERE   &lt;condition&gt;;          -- Boolean selection / join condition</pre>
+          Comparison operators: <code>=, &lt;, &lt;=, &gt;, &gt;=, &lt;&gt;</code>.
+        </div>
+        <div class="callout exam">
+          <div class="label">📝 Critical distinction — set vs multiset</div>
+          Unlike the formal relational model (a <strong>set</strong>), an SQL table is a <strong>multiset / bag</strong> — it <strong>allows duplicate rows</strong>. SQL does <strong>not</strong> auto-remove duplicates. Use <code>DISTINCT</code>, or a <code>PRIMARY KEY</code>/<code>UNIQUE</code>, to force a set. (Bag: {A,B,C,A}; order is irrelevant, but duplicates count.)
+        </div>
+
+        <h4>Example queries (COMPANY database)</h4>
+        <pre>-- Q0: birthdate & address of 'John B. Smith'  (SELECT-PROJECT)
+SELECT BDATE, ADDRESS
+FROM   EMPLOYEE
+WHERE  FNAME='John' AND MINIT='B' AND LNAME='Smith';
+
+-- Q1: name & address of all employees in 'Research'  (SELECT-PROJECT-JOIN)
+SELECT FNAME, LNAME, ADDRESS
+FROM   EMPLOYEE, DEPARTMENT
+WHERE  DNAME='Research' AND DNUMBER=DNO;
+-- DNAME='Research' is a SELECT condition; DNUMBER=DNO is a JOIN condition
+
+-- Q2: projects in 'Stafford' — two join conditions
+SELECT PNUMBER, DNUM, LNAME, BDATE, ADDRESS
+FROM   PROJECT, DEPARTMENT, EMPLOYEE
+WHERE  DNUM=DNUMBER AND MGRSSN=SSN AND PLOCATION='Stafford';</pre>
+        <div class="ar">
+          استعلام SQL أساسه ثلاث جمل: <span class="en">SELECT</span> (الأعمدة المطلوبة) و<span class="en">FROM</span> (الجداول) و<span class="en">WHERE</span> (الشرط). الشرط ممكن يكون <b>شرط اختيار</b> (مثل <span class="en">DNAME='Research'</span>) أو <b>شرط ربط</b> <span class="en">join</span> (مثل <span class="en">DNUMBER=DNO</span>). مهم: جدول SQL <b>يسمح بصفوف مكرّرة</b> (multiset)، فنستخدم <span class="en">DISTINCT</span> لإزالة التكرار.
+        </div>
+
+        <h4>Ambiguous names &amp; Aliases — الأسماء المتشابهة والأسماء البديلة</h4>
+        <p>The same attribute name may appear in different relations — qualify it: <code>EMPLOYEE.LNAME</code>, <code>DEPARTMENT.DNAME</code>. To refer to the <strong>same relation twice</strong>, use <span class="en-term">aliases (tuple variables)</span>:</p>
+        <pre>-- Q8: each employee with their immediate supervisor's name (self-join)
+SELECT E.FNAME, E.LNAME, S.FNAME, S.LNAME
+FROM   EMPLOYEE AS E, EMPLOYEE AS S
+WHERE  E.SUPER_SSN = S.SSN;
+-- E = employees (supervisees), S = the same table as supervisors
+-- AS can be dropped:  FROM EMPLOYEE E, EMPLOYEE S</pre>
+        <p>Attribute names can be renamed too: <code>EMPLOYEE AS E(Fn, Mi, Ln, Ssn, Bd, Addr, Sex, Sal, Sssn, Dno)</code>.</p>
+
+        <h4>Empty WHERE &amp; the asterisk</h4>
+        <p>A <strong>missing WHERE</strong> = no condition (≡ <code>WHERE TRUE</code>) → all tuples. With multiple tables and no join condition, the result is the <span class="en-term">CARTESIAN / CROSS PRODUCT</span> (all combinations — usually a mistake!). <code>SELECT *</code> retrieves <strong>all</strong> attributes; can be prefixed (<code>EMPLOYEE.*</code>).</p>
+        <pre>Q1C: SELECT * FROM EMPLOYEE WHERE DNO=5;
+Q10: SELECT SSN, DNAME FROM EMPLOYEE, DEPARTMENT;  -- ⚠️ Cartesian product!</pre>
+
+        <h3>4. Tables as Sets — Set Operations</h3>
+        <p>SQL supports set operations (need <strong>type-compatible</strong> operands): <span class="en-term">UNION</span>, <span class="en-term">INTERSECT</span>, <span class="en-term">EXCEPT</span> (difference) — these <strong>remove duplicates</strong>. Multiset versions keep duplicates: <code>UNION ALL</code>, <code>INTERSECT ALL</code>, <code>EXCEPT ALL</code>.</p>
+
+        <h3>5. Pattern Matching, BETWEEN &amp; Arithmetic</h3>
+        <div class="callout def">
+          <div class="label">📘 LIKE / BETWEEN / arithmetic</div>
+          <ul>
+            <li><span class="en-term">LIKE</span> — string pattern matching. <code>%</code> = any number of characters; <code>_</code> = exactly one character.</li>
+            <li><span class="en-term">BETWEEN</span> — inclusive range.</li>
+            <li>Arithmetic <code>+ &nbsp;– &nbsp;* &nbsp;/</code> can appear in SELECT.</li>
+          </ul>
+        </div>
+        <pre>WHERE Address LIKE '%Houston,TX%';     -- contains the substring
+WHERE Ssn     LIKE '__1__8901';        -- positions 3 and 6..9 fixed
+WHERE (Salary BETWEEN 30000 AND 40000) AND Dno = 5;
+
+-- Q13: salaries if ProductX workers get a 10% raise
+SELECT FNAME, LNAME, 1.1 * SALARY AS INCREASED_SAL
+FROM   EMPLOYEE, WORKS_ON, PROJECT
+WHERE  SSN=ESSN AND PNO=PNUMBER AND PNAME='ProductX';</pre>
+
+        <h3>6. Ordering — ORDER BY</h3>
+        <p>Sort results with <code>ORDER BY</code>; <code>ASC</code> (ascending, default) or <code>DESC</code> (descending). Usually placed last.</p>
+        <pre>SELECT ... ORDER BY D.Dname DESC, E.Lname ASC, E.Fname ASC;</pre>
+
+        <h3>7. INSERT, DELETE &amp; UPDATE — تعديل البيانات</h3>
+        <p>Three modification commands. INSERT adds rows; UPDATE &amp; DELETE may affect many rows that satisfy a condition. Integrity constraints are always enforced.</p>
+        <pre>-- INSERT (values in CREATE-TABLE attribute order; nulls supplied explicitly)
+INSERT INTO table_name VALUES (value1, value2, ...);
+
+-- DELETE (WHERE chooses rows; missing WHERE empties the table!)
+DELETE FROM table_name WHERE condition;
+
+-- UPDATE (SET gives new values; WHERE chooses rows)
+UPDATE table_name SET column_name = new_value WHERE condition;</pre>
+        <div class="callout note">
+          <div class="label">⭐ Worked UPDATE with subquery (U6)</div>
+          <pre>-- Give all employees in the 'Research' department a 10% raise
+UPDATE EMPLOYEE
+SET    SALARY = SALARY * 1.1
+WHERE  DNO IN (SELECT DNUMBER FROM DEPARTMENT
+               WHERE DNAME='Research');</pre>
+          On the right of <code>=</code>, <code>SALARY</code> means the <strong>old</strong> value; on the left, the <strong>new</strong> value.
+        </div>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip</div>
+          A <code>DELETE</code> with <strong>no WHERE</strong> empties the entire table (but keeps its definition — unlike <code>DROP TABLE</code>). A <code>DELETE</code> may be blocked or cascade depending on referential-integrity options.
+        </div>
+        <div class="ar">
+          ثلاث عمليات تعديل: <span class="en">INSERT</span> (تضيف صفوفًا، بنفس ترتيب الأعمدة في <span class="en">CREATE TABLE</span>)، <span class="en">DELETE</span> (تحذف صفوفًا حسب <span class="en">WHERE</span>؛ وبدون <span class="en">WHERE</span> تُفرّغ الجدول كاملًا)، و<span class="en">UPDATE</span> (تعدّل قيمًا عبر <span class="en">SET</span> حسب <span class="en">WHERE</span>). في مثال الزيادة ١٠٪: القيمة على يمين <span class="en">=</span> هي القديمة وعلى اليسار الجديدة.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 6 Summary — الخلاصة</div>
+          SQL DDL (<code>CREATE/ALTER/DROP TABLE</code>, <code>CREATE SCHEMA</code>) defines tables, data types, and constraints (<code>PRIMARY KEY, UNIQUE, FOREIGN KEY…REFERENCES, NOT NULL, DEFAULT</code>) with referential options (<code>RESTRICT/CASCADE/SET NULL/SET DEFAULT</code>). Retrieval uses <code>SELECT-FROM-WHERE</code>; SQL tables are <strong>multisets</strong> (use <code>DISTINCT</code>). Features: aliases, <code>*</code>, set ops (<code>UNION/INTERSECT/EXCEPT</code>), <code>LIKE</code>, <code>BETWEEN</code>, arithmetic, <code>ORDER BY</code>. Modification: <code>INSERT / DELETE / UPDATE</code>.
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 6  ========================= -->
+      <!-- >>> NEXT: Chapter 7 (More SQL) — type "Continue" <<<        -->
+
+
+<!-- ============================================================ -->
+      <!-- ====================  CHAPTER 7  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter" id="ch7">
+        <div class="ch-head">
+          <div class="kicker">Unit 7 · Languages</div>
+          <h2>More SQL: Complex Queries, Triggers, Views &amp; Schema Modification</h2>
+          <div class="ref">Textbook: Chapter 7 · Slides (Week 9)</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          NULL &amp; Three-Valued Logic · Nested (sub)queries · IN / ANY / ALL / EXISTS · Joined Tables &amp; Outer Joins · Aggregate Functions · GROUP BY &amp; HAVING · Schema Modification (ALTER) · Assertions &amp; Triggers (Views → Unit 11).
+        </div>
+
+        <h3>1. NULL &amp; Three-Valued Logic — القيمة الفارغة والمنطق الثلاثي</h3>
+        <p><span class="en-term">NULL</span> has three meanings: an <strong>unknown</strong> value, an <strong>unavailable/withheld</strong> value, or a <strong>not-applicable</strong> attribute. Each NULL is considered <strong>different</strong> from every other NULL, so SQL uses <span class="en-term">three-valued logic</span>: <strong>TRUE, FALSE, UNKNOWN</strong>. A <code>NULL = NULL</code> comparison is avoided — to test for null use <code>IS NULL</code> / <code>IS NOT NULL</code>.</p>
+        <pre>WHERE Super_ssn IS NULL;      -- employees with no supervisor</pre>
+        <div class="ar">
+          <span class="en">NULL</span> لها ٣ معانٍ: قيمة <b>مجهولة</b>، أو <b>غير متاحة</b>، أو <b>غير قابلة للتطبيق</b>. كل <span class="en">NULL</span> تُعتبر مختلفة عن الأخرى، لذلك SQL تستخدم منطقًا <b>ثلاثي القيم</b>: <span class="en">TRUE / FALSE / UNKNOWN</span>. لاختبار الفراغ نستخدم <span class="en">IS NULL</span> أو <span class="en">IS NOT NULL</span> وليس <span class="en">=</span>.
+        </div>
+
+        <h3>2. Nested Queries — الاستعلامات المتداخلة</h3>
+        <p>A <span class="en-term">nested query</span> is a complete <code>SELECT-FROM-WHERE</code> block inside the WHERE clause of an outer query. The <span class="en-term">IN</span> operator compares a value <em>v</em> with a set/multiset <em>V</em> (TRUE if v is one of them).</p>
+        <pre>-- Q17: SSNs of employees working on project 1, 2, or 3 (explicit set)
+SELECT DISTINCT Essn
+FROM   WORKS_ON
+WHERE  Pno IN (1, 2, 3);</pre>
+        <div class="callout def">
+          <div class="label">📘 ANY / SOME / ALL</div>
+          <ul>
+            <li><code>= ANY</code> (= <code>= SOME</code>) → TRUE if v equals <strong>some</strong> value in V — equivalent to <code>IN</code>.</li>
+            <li>Combine with <code>&gt;, &gt;=, &lt;, &lt;=, &lt;&gt;</code> for richer comparisons.</li>
+            <li><code>&gt; ALL</code> → v must exceed <strong>every</strong> value returned by the subquery.</li>
+          </ul>
+        </div>
+        <p>Queries nested with <code>=</code> or <code>IN</code> can often be <strong>collapsed</strong> into one block:</p>
+        <pre>-- Q16: employees whose dependent has the same name & sex as them
+SELECT E.Fname, E.Lname
+FROM   EMPLOYEE AS E, DEPENDENT AS D
+WHERE  E.Ssn=D.Essn AND E.Sex=D.Sex AND E.Fname=D.Dependent_name;</pre>
+        <p><strong>Tip:</strong> use tuple variables (aliases) for all tables to avoid ambiguity; put tuples of values in parentheses when comparing.</p>
+
+        <h3>3. Correlated Nested Queries — EXISTS / NOT EXISTS</h3>
+        <p>A <span class="en-term">correlated nested query</span> is evaluated <strong>once for each tuple</strong> of the outer query (the inner query references the outer tuple). The <span class="en-term">EXISTS</span> function checks whether the subquery result is <strong>non-empty</strong> (Boolean). <span class="en-term">UNIQUE(Q)</span> returns TRUE if Q has no duplicates.</p>
+        <pre>-- Q7: names of managers who have at least one dependent
+SELECT Fname, Lname
+FROM   EMPLOYEE
+WHERE  EXISTS (SELECT * FROM DEPENDENT  WHERE Ssn = Essn)
+  AND  EXISTS (SELECT * FROM DEPARTMENT WHERE Ssn = Mgr_Ssn);
+
+-- Q6: names of employees who have NO dependents
+SELECT Fname, Lname
+FROM   EMPLOYEE
+WHERE  NOT EXISTS (SELECT * FROM DEPENDENT WHERE Ssn = Essn);</pre>
+        <div class="ar">
+          الاستعلام المتداخل <b>المترابط</b> <span class="en">correlated</span> يُنفَّذ <b>مرة لكل صف</b> في الاستعلام الخارجي. <span class="en">EXISTS</span> تتحقق هل نتيجة الاستعلام الداخلي <b>غير فارغة</b>، و<span class="en">NOT EXISTS</span> العكس. مثال شائع: الموظفون <b>الذين ليس لديهم</b> معالون نستخدم <span class="en">NOT EXISTS</span>.
+        </div>
+
+        <h3>4. Joined Tables &amp; Outer Joins — الجداول المرتبطة</h3>
+        <p>SQL lets you place a <span class="en-term">joined table</span> directly in the FROM clause.</p>
+        <table>
+          <tr><th>Join</th><th>Behaviour</th></tr>
+          <tr><td><span class="en-term">INNER JOIN</span> (default)</td><td>A tuple appears only if it has a <strong>matching</strong> tuple in the other relation.</td></tr>
+          <tr><td><span class="en-term">NATURAL JOIN</span></td><td>No condition written — implicit <strong>EQUIJOIN</strong> on every pair of <strong>same-named</strong> attributes.</td></tr>
+          <tr><td><span class="en-term">LEFT OUTER JOIN</span></td><td><strong>Every</strong> left tuple appears; unmatched right side padded with <strong>NULL</strong>.</td></tr>
+          <tr><td><span class="en-term">RIGHT OUTER JOIN</span></td><td><strong>Every</strong> right tuple appears; unmatched left side padded with NULL.</td></tr>
+          <tr><td><span class="en-term">FULL OUTER JOIN</span></td><td>Every tuple from <strong>both</strong> sides appears; unmatched sides padded with NULL.</td></tr>
+        </table>
+        <pre>-- NATURAL JOIN (rename DEPARTMENT so Dno matches EMPLOYEE.Dno)
+Q1B: SELECT Fname, Lname, Address
+     FROM (EMPLOYEE NATURAL JOIN
+           (DEPARTMENT AS DEPT (Dname, Dno, Mssn, Msdate)))
+     WHERE Dname='Research';
+
+-- LEFT OUTER JOIN — every employee, even those with no supervisor
+SELECT E.Lname AS Employee_Name, S.Lname AS Supervisor_Name
+FROM   EMPLOYEE AS E LEFT OUTER JOIN EMPLOYEE AS S
+       ON E.Super_ssn = S.Ssn;</pre>
+
+        <h3>5. Aggregate Functions — الدوال التجميعية</h3>
+        <p>Summarize many tuples into a single value: <span class="en-term">COUNT, SUM, MAX, MIN, AVG</span>. <strong>NULL values are discarded</strong> before aggregation. Results can be renamed with <code>AS</code>. (<code>SOME</code>/<code>ALL</code> also act on Booleans: SOME ≈ OR, ALL ≈ AND.)</p>
+        <pre>SELECT COUNT(*) AS Total, AVG(Salary) AS AvgPay, MAX(Salary), MIN(Salary)
+FROM   EMPLOYEE;</pre>
+
+        <h3>6. GROUP BY &amp; HAVING — التجميع والتصفية</h3>
+        <div class="callout def">
+          <div class="label">📘 The rules</div>
+          <ul>
+            <li><span class="en-term">GROUP BY</span> partitions the relation into subgroups by the grouping attribute(s), then applies the aggregate to each group independently. The grouping attribute(s) <strong>must</strong> appear in the SELECT clause. A NULL grouping value forms its <strong>own</strong> group.</li>
+            <li><span class="en-term">HAVING</span> selects/rejects <strong>entire groups</strong> (a condition on the aggregate).</li>
+          </ul>
+        </div>
+        <pre>-- Q24: count & average salary per department
+SELECT Dno, COUNT(*), AVG(Salary)
+FROM   EMPLOYEE
+GROUP BY Dno;
+
+-- Q26: projects with MORE THAN two employees
+SELECT Pnumber, Pname, COUNT(*)
+FROM   PROJECT, WORKS_ON
+WHERE  Pnumber = Pno
+GROUP BY Pnumber, Pname
+HAVING COUNT(*) > 2;
+
+-- Customers per country (>10 only), busiest first, excluding USA
+SELECT COUNT(Id), Country
+FROM   Customer
+WHERE  Country <> 'USA'
+GROUP BY Country
+HAVING COUNT(Id) >= 9
+ORDER BY COUNT(Id) DESC;</pre>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip — WHERE vs HAVING</div>
+          <code>WHERE</code> filters <strong>tuple by tuple</strong> <em>before</em> grouping; <code>HAVING</code> filters <strong>whole groups</strong> <em>after</em> grouping. Logical evaluation order: <strong>FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY</strong>.
+        </div>
+        <div class="ar">
+          <span class="en">GROUP BY</span> تقسّم الجدول لمجموعات حسب صفة (أو صفات) التجميع، وتطبّق الدالة على كل مجموعة. الصفة المُجمَّع عليها <b>لازم</b> تظهر في <span class="en">SELECT</span>. <span class="en">HAVING</span> تصفّي <b>المجموعات كاملة</b>. الفرق المهم: <span class="en">WHERE</span> تصفّي <b>صفًا صفًا قبل</b> التجميع، و<span class="en">HAVING</span> تصفّي <b>المجموعات بعد</b> التجميع. ترتيب التنفيذ المنطقي: <span class="en">FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY</span>.
+        </div>
+
+        <h3>7. Schema Modification — ALTER TABLE</h3>
+        <p><code>ALTER TABLE</code> can add/drop a column, change a column definition, add/drop constraints, and change default values.</p>
+        <pre>ALTER TABLE COMPANY.EMPLOYEE ADD COLUMN Job VARCHAR(12);
+ALTER TABLE COMPANY.EMPLOYEE DROP COLUMN Address;
+ALTER TABLE COMPANY.DEPARTMENT ALTER COLUMN Mgr_ssn DROP DEFAULT;
+ALTER TABLE COMPANY.DEPARTMENT ALTER COLUMN Mgr_ssn SET DEFAULT '333445555';</pre>
+
+        <h3>8. Assertions, Triggers &amp; Views — القيود والمشغّلات والرؤى</h3>
+        <div class="callout def">
+          <div class="label">📘 Semantic constraints &amp; actions (SQL-99)</div>
+          <ul>
+            <li><span class="en-term">CREATE ASSERTION</span> — declares a <strong>semantic constraint</strong> (a business rule) using a <code>CHECK</code> condition that must always hold across the database.</li>
+            <li><span class="en-term">CREATE TRIGGER</span> — specifies an automatic <strong>action</strong> (Event–Condition–Action): when an event (INSERT/UPDATE/DELETE) occurs and a condition holds, an action runs.</li>
+            <li><span class="en-term">View</span> — a virtual table derived from base tables (full treatment in <strong>Unit 11</strong>).</li>
+          </ul>
+        </div>
+        <pre>-- Assertion: every employee's salary ≤ their department manager's salary
+CREATE ASSERTION SALARY_CONSTRAINT
+CHECK ( NOT EXISTS ( SELECT * FROM EMPLOYEE E, EMPLOYEE M, DEPARTMENT D
+                     WHERE E.Salary > M.Salary
+                       AND E.Dno = D.Dnumber
+                       AND D.Mgr_ssn = M.Ssn ) );</pre>
+        <div class="ar">
+          <span class="en">ASSERTION</span> تُعبّر عن <b>قيد دلالي</b> (قاعدة عمل) عبر شرط <span class="en">CHECK</span> يجب أن يتحقق دائمًا. <span class="en">TRIGGER</span> يحدّد <b>إجراءً تلقائيًا</b> (حدث–شرط–فعل) يُنفَّذ عند <span class="en">INSERT/UPDATE/DELETE</span>. أمّا الـ<span class="en">Views</span> (الجداول الافتراضية) فلها شرح كامل في الوحدة ١١.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 7 Summary — الخلاصة</div>
+          Complex SQL adds: <strong>NULL/3-valued logic</strong> (IS NULL); <strong>nested queries</strong> with <code>IN / ANY / ALL</code>; <strong>correlated</strong> subqueries with <code>EXISTS / NOT EXISTS</code>; <strong>joined tables</strong> (INNER, NATURAL, LEFT/RIGHT/FULL OUTER); <strong>aggregates</strong> (COUNT/SUM/AVG/MIN/MAX, NULLs discarded); <strong>GROUP BY / HAVING</strong> (filter groups, not tuples); and schema modification via <code>ALTER TABLE</code>. <strong>Assertions</strong> express semantic constraints, <strong>triggers</strong> express automatic actions.
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 7  ========================= -->
+      <!-- >>> NEXT: Chapter 8 (Relational Algebra) — type "Continue" <<< -->
+
+<!-- ============================================================ -->
+      <!-- ====================  CHAPTER 8  =========================== -->
+      <!-- ============================================================ -->
+      <section class="chapter" id="ch8">
+        <div class="ch-head">
+          <div class="kicker">Unit 8 · Languages</div>
+          <h2>The Relational Algebra</h2>
+          <div class="ref">Textbook: Chapter 8 · Slides (Week 11) + Notes</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          Relational Algebra overview · Unary operations (σ, π, ρ) · Set-theory operations (∪, ∩, −, ×) · Binary operations (⋈ JOIN, ÷ DIVISION) · Additional operations (OUTER JOINs, OUTER UNION, AGGREGATE) · Query examples.
+        </div>
+
+        <h3>1. Overview — نظرة عامة</h3>
+        <p><span class="en-term">Relational algebra</span> is the basic set of operations for the relational model. Each operation takes one or more relations and produces a <strong>new relation</strong> — so the result can be fed into another operation (the algebra is <strong>“closed”</strong>). A sequence of operations is a <span class="en-term">relational-algebra expression</span>.</p>
+        <table>
+          <tr><th>Group</th><th>Operations</th></tr>
+          <tr><td>Unary</td><td>SELECT (σ), PROJECT (π), RENAME (ρ)</td></tr>
+          <tr><td>From set theory</td><td>UNION (∪), INTERSECTION (∩), DIFFERENCE / MINUS (−), CARTESIAN PRODUCT (×)</td></tr>
+          <tr><td>Binary</td><td>JOIN (⋈) and its variants, DIVISION (÷)</td></tr>
+          <tr><td>Additional</td><td>OUTER JOINs, OUTER UNION, AGGREGATE functions (ℱ)</td></tr>
+        </table>
+        <div class="callout note">
+          <div class="label">💡 Origin of “Algebra”</div>
+          The word <em>algebra</em> comes from <strong>al-jabr</strong>, the book by <strong>Muhammad ibn Musa al-Khwarizmi</strong> (~800–847 CE). He called variables “shay” (Arabic for “thing”), transliterated in Spain as “xay” → abbreviated to <strong>x</strong>. The word <strong>algorithm</strong> also comes from “al-Khwarizmi”.
+        </div>
+
+        <h3>2. SELECT (σ) — العملية الأحادية: الاختيار</h3>
+        <p><span class="en-term">SELECT</span> picks a <strong>subset of the rows</strong> (horizontal partitioning) that satisfy a Boolean condition. Form: <code>σ&lt;condition&gt;(R)</code>.</p>
+        <pre>σ DNO = 4 (EMPLOYEE)            -- employees in department 4
+σ SALARY > 30000 (EMPLOYEE)    -- employees earning over 30,000</pre>
+        <div class="callout def">
+          <div class="label">📘 Properties of SELECT</div>
+          <ul>
+            <li>Result has the <strong>same schema</strong> as R; <code>|result| ≤ |R|</code>.</li>
+            <li><strong>Commutative:</strong> <code>σ_c1(σ_c2(R)) = σ_c2(σ_c1(R))</code>.</li>
+            <li>A cascade can be merged with AND: <code>σ_c1(σ_c2(R)) = σ_(c1 AND c2)(R)</code>.</li>
+          </ul>
+        </div>
+
+        <h3>3. PROJECT (π) — الإسقاط</h3>
+        <p><span class="en-term">PROJECT</span> keeps certain <strong>columns</strong> (vertical partitioning) and discards the rest. Form: <code>π&lt;attribute list&gt;(R)</code>. Because the result is a <strong>set</strong>, PROJECT <strong>removes duplicate tuples</strong>.</p>
+        <pre>π LNAME, FNAME, SALARY (EMPLOYEE)</pre>
+        <div class="callout def">
+          <div class="label">📘 Properties of PROJECT</div>
+          <code>|result| ≤ |R|</code>; if the attribute list <strong>includes a key</strong>, then <code>|result| = |R|</code> (no duplicates removed). PROJECT is <strong>not</strong> commutative.
+        </div>
+        <div class="ar">
+          <b>SELECT (σ)</b> تختار <b>صفوفًا</b> تحقّق شرطًا (تقسيم أفقي)، والنتيجة بنفس أعمدة الجدول. <b>PROJECT (π)</b> تختار <b>أعمدة</b> (تقسيم رأسي) و<b>تحذف الصفوف المكرّرة</b> لأن النتيجة مجموعة <span class="en">set</span>. لو القائمة فيها مفتاح فلن يُحذف أي صف.
+        </div>
+
+        <h3>4. Expressions, Intermediate Naming &amp; RENAME (ρ)</h3>
+        <p>You can write one nested expression, or break it into steps using the assignment arrow <code>←</code> to name intermediate relations:</p>
+        <pre>-- Single expression:
+π FNAME, LNAME, SALARY ( σ DNO=5 (EMPLOYEE) )
+
+-- Step-by-step (equivalent):
+DEP5_EMPS ← σ DNO=5 (EMPLOYEE)
+RESULT    ← π FNAME, LNAME, SALARY (DEP5_EMPS)</pre>
+        <p><span class="en-term">RENAME (ρ)</span> changes the relation name and/or the attribute names: <code>ρ_S(B1,…,Bn)(R)</code>.</p>
+
+        <h3>5. Set-Theory Operations — عمليات نظرية المجموعات</h3>
+        <div class="callout def">
+          <div class="label">📘 Type compatibility</div>
+          <strong>UNION, INTERSECTION, DIFFERENCE</strong> require the two relations to be <span class="en-term">type compatible</span>: same number of columns, and corresponding columns of compatible type. (CARTESIAN PRODUCT does <strong>not</strong>.)
+        </div>
+        <table>
+          <tr><th>Op</th><th>Result</th><th>Example (R={(1,A),(2,B),(3,C)}, S={(2,B),(3,C),(4,D)})</th></tr>
+          <tr><td>UNION (∪)</td><td>All tuples in R <strong>or</strong> S; duplicates removed.</td><td>R∪S = {(1,A),(2,B),(3,C),(4,D)}</td></tr>
+          <tr><td>INTERSECTION (∩)</td><td>Tuples in <strong>both</strong> R and S.</td><td>R∩S = {(2,B),(3,C)}</td></tr>
+          <tr><td>DIFFERENCE (−)</td><td>Tuples in R but <strong>not</strong> in S.</td><td>R−S = {(1,A)}</td></tr>
+        </table>
+        <div class="callout def">
+          <div class="label">📘 Properties</div>
+          ∪ and ∩ are <strong>commutative &amp; associative</strong>. DIFFERENCE is <strong>not</strong> commutative: <code>R − S ≠ S − R</code> in general.
+        </div>
+
+        <h3>6. CARTESIAN PRODUCT (×) — الضرب الديكارتي</h3>
+        <p>Combines <strong>every</strong> tuple of R with every tuple of S. Result has <code>n + m</code> attributes and <code>nR × nS</code> tuples. Operands need <strong>not</strong> be type compatible. On its own it is usually <strong>not meaningful</strong> — it becomes useful when followed by a SELECT:</p>
+        <pre>FEMALE_EMPS     ← σ SEX='F' (EMPLOYEE)
+EMPNAMES        ← π FNAME, LNAME, SSN (FEMALE_EMPS)
+EMP_DEPENDENTS  ← EMPNAMES × DEPENDENT          -- every combination (not meaningful)
+ACTUAL_DEPS     ← σ SSN=ESSN (EMP_DEPENDENTS)   -- keep only real pairs
+RESULT          ← π FNAME, LNAME, DEPENDENT_NAME (ACTUAL_DEPS)</pre>
+
+        <h3>7. JOIN (⋈) — الربط</h3>
+        <p>JOIN = <strong>CARTESIAN PRODUCT followed by SELECT</strong>, combined into one operation. It combines <strong>related</strong> tuples from two relations: <code>R ⋈&lt;join condition&gt; S</code>. The result keeps only tuples satisfying the condition (so generally fewer than <code>nR × nS</code>).</p>
+        <pre>-- Name of the manager of each department
+DEPT_MGR ← DEPARTMENT ⋈ MGRSSN=SSN EMPLOYEE</pre>
+        <table>
+          <tr><th>Variant</th><th>Definition</th></tr>
+          <tr><td><span class="en-term">Theta-join</span></td><td>General case — the condition (θ) can be any Boolean expression (e.g. <code>R.Ai &lt; S.Bj</code>).</td></tr>
+          <tr><td><span class="en-term">EQUIJOIN</span></td><td>Join using <strong>only equality (=)</strong>. The result has one or more pairs of columns with identical values (the matching columns; names need not match).</td></tr>
+          <tr><td><span class="en-term">NATURAL JOIN (*)</span></td><td>Like EQUIJOIN but <strong>removes the superfluous duplicate column</strong>. Requires the join attributes to have the <strong>same name</strong> in both relations (rename first if not).</td></tr>
+        </table>
+        <pre>-- Natural join on DNUMBER (only attribute with the same name)
+DEPT_LOCS ← DEPARTMENT * DEPT_LOCATIONS</pre>
+        <div class="ar">
+          <b>JOIN (⋈)</b> = <span class="en">CARTESIAN PRODUCT</span> ثم <span class="en">SELECT</span> في عملية واحدة، يجمع الصفوف المترابطة. <b>EQUIJOIN</b> يستخدم المساواة فقط ويُبقي عمودين متطابقي القيم. <b>NATURAL JOIN (*)</b> مثل <span class="en">EQUIJOIN</span> لكن <b>يحذف العمود المكرّر الزائد</b>، ويشترط تطابق اسم صفة الربط في الجدولين. والحالة العامة <b>theta-join</b> تسمح بأي شرط منطقي.
+        </div>
+
+        <h3>8. DIVISION (÷) — القسمة</h3>
+        <div class="callout def">
+          <div class="label">📘 Definition</div>
+          <code>R(Z) ÷ S(X)</code> where <code>X ⊆ Z</code> and <code>Y = Z − X</code>; the result is <code>T(Y)</code>. A tuple <em>t</em> is in T if — for <strong>every</strong> tuple in S — there is a matching tuple in R combining <em>t</em>’s Y-values with that S-tuple’s X-values. In plain terms: DIVISION finds items in R that are related to <strong>all</strong> items in S.
+        </div>
+        <p><strong>Classic query:</strong> “Names of employees who work on <strong>all</strong> the projects that John Smith works on”:</p>
+        <pre>SMITH        ← σ FNAME='John' AND LNAME='Smith' (EMPLOYEE)
+SMITH_PNOS   ← π PNO (WORKS_ON ⋈ ESSN=SSN SMITH)      -- John's projects
+SSN_PNOS     ← π ESSN, PNO (WORKS_ON)                  -- all (emp, project) pairs
+SSNS(SSN)    ← SSN_PNOS ÷ SMITH_PNOS                   -- employees on ALL his projects
+RESULT       ← π FNAME, LNAME (SSNS * EMPLOYEE)</pre>
+        <div class="ar">
+          <b>القسمة (÷)</b> تجيب العناصر في <span class="en">R</span> المرتبطة بـ<b>كل</b> عناصر <span class="en">S</span>. المثال الكلاسيكي: «الموظفون الذين يعملون على <b>كل</b> المشاريع التي يعمل عليها جون سميث» — نقسّم أزواج (الموظف، المشروع) على مجموعة مشاريع جون سميث.
+        </div>
+
+        <h3>9. Additional Operations — عمليات إضافية</h3>
+        <ul>
+          <li><span class="en-term">OUTER JOINs</span> (LEFT / RIGHT / FULL) — keep unmatched tuples too, padding the missing side with <strong>NULL</strong> (vs the inner JOIN which drops unmatched tuples).</li>
+          <li><span class="en-term">OUTER UNION</span> — unions two partially-compatible relations.</li>
+          <li><span class="en-term">AGGREGATE functions (ℱ)</span> — COUNT, SUM, MAX, MIN, AVG, with optional grouping attributes, to compute summaries.</li>
+        </ul>
+
+        <h3>10. Worked Query Examples — أمثلة استعلام كاملة</h3>
+        <div class="callout note">
+          <div class="label">⭐ Q1 — name &amp; address of employees in 'Research'</div>
+          <pre>-- Procedural:
+RESEARCH_DEPT ← σ DNAME='Research' (DEPARTMENT)
+RESEARCH_EMPS ← (RESEARCH_DEPT ⋈ DNUMBER=DNO EMPLOYEE)
+RESULT        ← π FNAME, LNAME, ADDRESS (RESEARCH_EMPS)
+
+-- Single expression:
+π Fname, Lname, Address ( σ Dname='Research'
+    (DEPARTMENT ⋈ Dnumber=Dno EMPLOYEE) )</pre>
+        </div>
+        <div class="callout note">
+          <div class="label">⭐ Q6 — employees who have NO dependents (uses DIFFERENCE)</div>
+          <pre>ALL_EMPS          ← π SSN (EMPLOYEE)
+EMPS_WITH_DEPS(SSN) ← π ESSN (DEPENDENT)
+EMPS_WITHOUT_DEPS ← (ALL_EMPS − EMPS_WITH_DEPS)
+RESULT            ← π LNAME, FNAME (EMPS_WITHOUT_DEPS * EMPLOYEE)</pre>
+        </div>
+
+        <div class="callout exam">
+          <div class="label">📝 Exam Tips — symbols</div>
+          σ = SELECT (rows), π = PROJECT (columns), ρ = RENAME, ∪/∩/− = set ops (need type compatibility), × = CARTESIAN, ⋈ = JOIN, ÷ = DIVISION (“for all”). Remember: NATURAL JOIN drops the duplicate column; “no dependents / none / not any” often maps to <strong>DIFFERENCE</strong> in algebra and <strong>NOT EXISTS</strong> in SQL; “for all / every” maps to <strong>DIVISION</strong>.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 8 Summary — الخلاصة</div>
+          Relational algebra is a <strong>closed</strong> set of operations producing relations. Unary: <strong>σ</strong> (rows), <strong>π</strong> (columns, removes dups), <strong>ρ</strong> (rename). Set theory: <strong>∪, ∩, −</strong> (type-compatible) and <strong>×</strong> (combinatorial). Binary: <strong>⋈</strong> (theta / equi / natural) = CARTESIAN + SELECT, and <strong>÷</strong> (DIVISION = “related to all”). Additional: OUTER JOINs, OUTER UNION, AGGREGATE. Queries can be written nested or step-by-step with <code>←</code>.
+        </div>
+      </section>
+      <!-- =================  END CHAPTER 8  ========================= -->
+      <!-- >>> NEXT: Chapter 9 (ER-to-Relational Mapping) — type "Continue" <<< -->
+
+<!-- ====================  CHAPTER 9  =========================== -->
+      <section class="chapter" id="ch9">
+        <div class="ch-head">
+          <div class="kicker">Unit 9 · Relational Model</div>
+          <h2>Relational Database Design by ER-to-Relational Mapping</h2>
+          <div class="ref">Textbook: Chapter 9 · Slides (Week 7)</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline — the mapping algorithm</div>
+          Step 1 Regular entities · Step 2 Weak entities · Step 3 Binary 1:1 · Step 4 Binary 1:N · Step 5 Binary M:N · Step 6 Multivalued attributes.
+        </div>
+
+        <h3>1. Goals of Mapping — أهداف التحويل</h3>
+        <ul>
+          <li><strong>Preserve all information</strong> (all attributes).</li>
+          <li><strong>Maintain constraints</strong> as far as possible (the relational model cannot keep <em>all</em> ER constraints — e.g. a max ratio like 1:10, or exhaustive subtyping).</li>
+          <li><strong>Minimize NULL values.</strong></li>
+        </ul>
+        <div class="ar">
+          تحويل مخطط <span class="en">ER</span> إلى جداول علائقية له ٣ أهداف: <b>الحفاظ على كل المعلومات</b>، و<b>الحفاظ على القيود</b> قدر الإمكان (النموذج العلائقي ما يقدر يحفظ كل القيود مثل النسبة القصوى 1:10)، و<b>تقليل القيم الفارغة</b> <span class="en">NULL</span>.
+        </div>
+
+        <h3>2. The Six Steps — الخطوات الست</h3>
+        <table>
+          <tr><th>Step</th><th>Rule</th><th>COMPANY example</th></tr>
+          <tr><td><strong>1. Regular (strong) entity</strong></td><td>Create a relation R with all simple attributes; pick a key as PK (composite key → all its simple attributes).</td><td>EMPLOYEE (PK=SSN), DEPARTMENT (PK=DNUMBER), PROJECT (PK=PNUMBER).</td></tr>
+          <tr><td><strong>2. Weak entity</strong></td><td>Create R with all simple attributes; add the owner’s PK as a <strong>FK</strong>; PK = owner’s PK + the partial key.</td><td>DEPENDENT: add ESSN (FK→EMPLOYEE); PK = {ESSN, DEPENDENT_NAME}.</td></tr>
+          <tr><td><strong>3. Binary 1:1</strong></td><td>Three options: (a) <strong>FK approach</strong> — put a FK in one side (prefer the side with <strong>total participation</strong>); (b) <strong>merge</strong> both entities + relationship into one relation (good when both total); (c) <strong>cross-reference relation</strong> (third relation).</td><td>MANAGES → put MGRSSN (+ start date) in DEPARTMENT (its participation is total).</td></tr>
+          <tr><td><strong>4. Binary 1:N</strong></td><td>Put the PK of the “1” side as a <strong>FK</strong> in the relation on the <strong>N-side</strong>; add any relationship attributes there too.</td><td>WORKS_FOR → DNO (FK→DEPARTMENT) in EMPLOYEE. Also CONTROLS, SUPERVISION.</td></tr>
+          <tr><td><strong>5. Binary M:N</strong></td><td>Create a <strong>new relationship relation</strong> S; include the PKs of both sides as FKs — their <strong>combination is the PK</strong>; add relationship attributes.</td><td>WORKS_ON (ESSN, PNO, HOURS); PK = {ESSN, PNO}.</td></tr>
+          <tr><td><strong>6. Multivalued attribute</strong></td><td>Create a <strong>new relation</strong> R with the attribute + the owner’s PK as FK; PK = both together.</td><td>DEPT_LOCATIONS (DNUMBER, DLOCATION); PK = {DNUMBER, DLOCATION}.</td></tr>
+        </table>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tips</div>
+          <strong>1:N</strong> → FK goes on the <strong>N-side</strong> (no new table). <strong>M:N</strong> → <strong>always</strong> a new relation with a composite PK of both FKs. <strong>Multivalued attribute</strong> → <strong>always</strong> a new relation. <strong>Weak entity</strong> → PK = owner PK + partial key.
+        </div>
+        <div class="ar">
+          الخلاصة العملية: علاقة <b>1:N</b> ← المفتاح الأجنبي يروح للطرف <span class="en">N</span> (بدون جدول جديد). علاقة <b>M:N</b> ← <b>جدول جديد دائمًا</b> ومفتاحه الأساسي = اتحاد المفتاحين. الصفة <b>متعددة القيم</b> ← <b>جدول جديد دائمًا</b>. الكيان <b>الضعيف</b> ← مفتاحه = مفتاح المالك + المفتاح الجزئي.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 9 Summary — الخلاصة</div>
+          The ER→Relational algorithm turns a conceptual schema into tables in 6 steps: strong entities → relations; weak entities → relation + owner FK in PK; 1:1 → FK (prefer total side) / merge / cross-ref; 1:N → FK on N-side; M:N → new relationship relation with composite PK; multivalued → new relation. Goals: preserve information, keep constraints where possible, minimize NULLs.
+        </div>
+      </section>
+      <!-- ====================  CHAPTER 10  ========================== -->
+      <section class="chapter" id="ch10">
+        <div class="ch-head">
+          <div class="kicker">Unit 10 · Design Theory</div>
+          <h2>Functional Dependencies &amp; Normalization</h2>
+          <div class="ref">Slides (Week 12) + Notes (Textbook Ch 10) + Spurious-Tuples handout</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          Why normalize · Update anomalies · Spurious tuples &amp; lossless join · Functional Dependencies · Armstrong’s inference rules &amp; closure · Keys (prime/non-prime) · 1NF · 2NF · 3NF · BCNF.
+        </div>
+
+        <h3>1. Why Normalize? — لماذا التطبيع؟</h3>
+        <p>Normalization avoids four problems: (1) mixing attributes of distinct real-world entities, (2) <strong>redundant information</strong> and <strong>update anomalies</strong>, (3) too many <strong>NULL</strong> values, (4) generation of <strong>spurious tuples</strong>.</p>
+        <div class="callout def">
+          <div class="label">📘 The three update anomalies</div>
+          <ul>
+            <li><span class="en-term">Insertion anomaly</span> — cannot add data because other data is missing (e.g. can’t insert a project unless an employee is assigned to it).</li>
+            <li><span class="en-term">Deletion anomaly</span> — deleting one fact unintentionally loses other facts (deleting the last employee on a project loses the project).</li>
+            <li><span class="en-term">Modification anomaly</span> — redundant data must be changed in many rows; a partial update causes inconsistency (renaming a project must change all 100 employee rows).</li>
+          </ul>
+        </div>
+        <div class="ar">
+          <b>التطبيع</b> <span class="en">normalization</span> هو تنظيم البيانات لتقليل <b>التكرار</b> وتحسين <b>التكامل</b>، عبر تقسيم الجداول الكبيرة لجداول أصغر مترابطة. يعالج ثلاثة شذوذات: <b>الإدخال</b> (ما نقدر نضيف بسبب غياب بيانات أخرى)، <b>الحذف</b> (نفقد بيانات مهمة عند الحذف)، <b>التعديل</b> (نضطر نعدّل في أماكن كثيرة فيحصل تضارب).
+        </div>
+
+        <h3>2. Spurious Tuples &amp; Lossless Join — التابع الزائف والربط بلا فقد</h3>
+        <p>A <span class="en-term">spurious tuple</span> is a false row that appears when badly-decomposed tables are joined (often a Cartesian product when there’s <strong>no proper common attribute</strong>). A decomposition must be <span class="en-term">lossless (non-additive)</span>: re-joining the pieces gives <strong>exactly</strong> the original relation — no extra rows. A <span class="en-term">lossy</span> decomposition produces spurious tuples.</p>
+        <div class="callout warn">
+          <div class="label">⚠️ Guideline 4</div>
+          Design schemas so that joins use <strong>(foreign key, primary key)</strong> equality. The <strong>lossless-join property cannot be sacrificed</strong>; dependency preservation is less strict and may sometimes be sacrificed.
+        </div>
+        <div class="ar">
+          <b>التابع الزائف</b> <span class="en">spurious tuple</span> هو صف خاطئ يظهر عند ربط جداول مُفكَّكة بشكل سيّئ (غالبًا بسبب <span class="en">lossy decomposition</span> أو غياب صفة مشتركة). التفكيك الصحيح لازم يكون <b>بلا فقد</b> <span class="en">lossless</span>: إعادة الربط تعطي الجدول الأصلي تمامًا دون صفوف زائدة.
+        </div>
+
+        <h3>3. Functional Dependencies (FDs) — الاعتماديات الوظيفية</h3>
+        <div class="callout def">
+          <div class="label">📘 Definition</div>
+          A functional dependency <code>X → Y</code> holds if whenever two tuples agree on X they must agree on Y (X <strong>uniquely determines</strong> Y). Formally: if <code>t1[X]=t2[X]</code> then <code>t1[Y]=t2[Y]</code>. FDs come from real-world meaning. If K is a key, then <code>K →</code> all attributes.
+        </div>
+        <pre>SSN → ENAME
+PNUMBER → {PNAME, PLOCATION}
+{SSN, PNUMBER} → HOURS        -- needs BOTH attributes together
+{StudentID, CourseID} → Grade -- neither alone determines Grade</pre>
+
+        <h4>Armstrong’s Inference Rules — قواعد آرمسترونغ</h4>
+        <div class="callout def">
+          <div class="label">📘 Sound &amp; complete set</div>
+          <ul>
+            <li><span class="en-term">IR1 Reflexive:</span> if Y ⊆ X then X → Y.</li>
+            <li><span class="en-term">IR2 Augmentation:</span> if X → Y then XZ → YZ.</li>
+            <li><span class="en-term">IR3 Transitive:</span> if X → Y and Y → Z then X → Z.</li>
+          </ul>
+          Derived: <strong>Decomposition</strong> (X→YZ ⟹ X→Y, X→Z), <strong>Union</strong> (X→Y, X→Z ⟹ X→YZ), <strong>Pseudotransitivity</strong> (X→Y, WY→Z ⟹ WX→Z).
+        </div>
+        <p><span class="en-term">Closure F⁺</span> = all FDs inferable from F. <span class="en-term">Attribute closure X⁺</span> = all attributes determined by X. Two FD sets are <span class="en-term">equivalent</span> if F⁺ = G⁺ (each <em>covers</em> the other). A <span class="en-term">minimal set</span> has single-attribute RHS, no removable FD, and no reducible LHS.</p>
+
+        <h4>Keys: Prime vs Non-prime</h4>
+        <p>A <span class="en-term">prime attribute</span> is a member of <strong>some</strong> candidate key; a <span class="en-term">non-prime (nonkey)</span> attribute belongs to <strong>no</strong> candidate key. Normal forms are defined in terms of these.</p>
+        <div class="ar">
+          <span class="en">X → Y</span> تعني أن <span class="en">X</span> يحدّد <span class="en">Y</span> بشكل فريد. قواعد <b>آرمسترونغ</b>: الانعكاس <span class="en">reflexive</span>، الزيادة <span class="en">augmentation</span>، التعدّي <span class="en">transitive</span> — ومنها نشتق التحليل والاتحاد. <span class="en">X⁺</span> هو إغلاق الصفات (كل ما تحدّده <span class="en">X</span>). الصفة <b>الأولية</b> <span class="en">prime</span> جزء من مفتاح مرشّح، و<b>غير الأولية</b> ليست كذلك.
+        </div>
+
+        <h3>4. The Normal Forms — الأشكال الطبيعية</h3>
+        <table>
+          <tr><th>Form</th><th>Rule</th></tr>
+          <tr><td><span class="en-term">1NF</span></td><td>All values <strong>atomic</strong> — no repeating groups, multivalued, composite, or nested attributes.</td></tr>
+          <tr><td><span class="en-term">2NF</span></td><td>In 1NF + every non-prime attribute is <strong>fully</strong> functionally dependent on the PK (<strong>no partial dependency</strong> on part of a composite key).</td></tr>
+          <tr><td><span class="en-term">3NF</span></td><td>In 2NF + <strong>no transitive dependency</strong> (no non-key attribute depending on another non-key attribute).</td></tr>
+          <tr><td><span class="en-term">BCNF</span></td><td>For <strong>every</strong> FD <code>X → A</code>, X is a <strong>superkey</strong>. Stronger than 3NF (“3.5NF”).</td></tr>
+        </table>
+        <p>Each form is strictly stronger: every BCNF ⊂ 3NF ⊂ 2NF ⊂ 1NF. Some relations are 3NF but not BCNF.</p>
+
+        <h4>1NF — make values atomic</h4>
+        <pre>-- UNF (repeating group):           -- 1NF (one value per cell):
+StudentID | Borrowed books           StudentID | Borrowed book
+C45       | B33, B44, B55      →      C45       | B33
+                                      C45       | B44
+                                      C45       | B55</pre>
+
+        <h4>2NF — remove partial dependencies</h4>
+        <p><code>Student-Course(StudentID, CourseID, CourseName, Instructor)</code>, PK = {StudentID, CourseID}. Here <code>CourseID → CourseName, Instructor</code> — a <strong>partial</strong> dependency (depends only on part of the key). Decompose:</p>
+        <pre>Course(CourseID, CourseName, Instructor)
+Enrollment(StudentID, CourseID)</pre>
+
+        <h4>3NF — remove transitive dependencies</h4>
+        <p>If <code>A → B</code> and <code>B → C</code> then <code>A → C</code> (transitive). Example tournament table, PK = {Tournament, Year}: <code>(Tournament,Year) → Winner</code> and <code>Winner → DOB</code>, so DOB is transitively dependent. Decompose:</p>
+        <pre>Wins(Tournament, Year, Winner)
+Player(Winner, DOB)</pre>
+
+        <h4>BCNF — every determinant is a superkey</h4>
+        <p>3NF-but-not-BCNF example, PK = {Project, Branch}: FDs <code>{Project,Branch} → Manager</code> and <code>Manager → Branch</code>. <code>Manager</code> is a determinant but <strong>not</strong> a superkey → BCNF violation. Decompose on the offending FD:</p>
+        <pre>R1(Manager, Branch)      -- from Manager → Branch
+R2(Project, Manager)</pre>
+        <div class="callout exam">
+          <div class="label">📝 Exam Tip — the ladder</div>
+          1NF = atomic · 2NF = no <strong>partial</strong> dependency · 3NF = no <strong>transitive</strong> dependency · BCNF = every <strong>determinant is a superkey</strong>. To move up a level you <strong>decompose</strong> (project) the offending dependency into its own relation with a copy of its determinant.
+        </div>
+        <div class="ar">
+          سُلّم الأشكال: <span class="en">1NF</span> قيم ذرّية · <span class="en">2NF</span> لا اعتمادية جزئية · <span class="en">3NF</span> لا اعتمادية متعدّية · <span class="en">BCNF</span> كل محدِّد <span class="en">determinant</span> لازم يكون <span class="en">superkey</span>. للانتقال لمستوى أعلى <b>نفكّك</b> الاعتمادية المخالفة في جدول مستقل مع نسخة من محدِّدها. كل شكل أقوى من السابق.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 10 Summary — الخلاصة</div>
+          Normalization removes redundancy and the insert/delete/modify <strong>anomalies</strong>, and avoids <strong>spurious tuples</strong> (decompositions must be <strong>lossless</strong>). <strong>FDs</strong> (X→Y) plus <strong>Armstrong’s rules</strong> and <strong>closure</strong> formalize “good” design. The ladder: <strong>1NF</strong> (atomic) → <strong>2NF</strong> (no partial) → <strong>3NF</strong> (no transitive) → <strong>BCNF</strong> (every determinant a superkey).
+        </div>
+      </section>
+
+<!-- ====================  CHAPTER 11  ========================== -->
+      <section class="chapter" id="ch11">
+        <div class="ch-head">
+          <div class="kicker">Unit 11 · Storage &amp; Security</div>
+          <h2>Database Views, Authorization &amp; Security</h2>
+          <div class="ref">Textbook: Slides (Week 10)</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Chapter Outline</div>
+          Aspects of database security · Privileges (GRANT / REVOKE) · Views (virtual tables) · View updatability · Combining views &amp; privileges · Integrity.
+        </div>
+
+        <h3>1. Database Security — أمن قواعد البيانات</h3>
+        <p>Security is about <strong>controlling access</strong> to information. Many layers matter:</p>
+        <ul>
+          <li><span class="en-term">Legal issues</span> — data-protection laws, consent, retention/deletion policies.</li>
+          <li><span class="en-term">Physical security</span> — protect servers/backups from theft, disasters, unauthorized access.</li>
+          <li><span class="en-term">OS / Network security</span> — firewalls, OS patches, Intrusion Detection Systems.</li>
+          <li><span class="en-term">Policies &amp; protocols</span> — access-control policies, reviews, training.</li>
+          <li><span class="en-term">Encryption &amp; passwords</span> — data-at-rest &amp; data-in-transit encryption, strong passwords + MFA, lockout.</li>
+          <li><span class="en-term">DBMS security</span> — each user has an account (username/password); the DBMS verifies it and checks <strong>permissions</strong> when a user retrieves data, modifies data, or modifies structure.</li>
+        </ul>
+        <div class="ar">
+          الأمن هو <b>التحكم في الوصول</b> للمعلومات، وله طبقات: قانونية، فيزيائية، أمن نظام التشغيل والشبكة، السياسات، التشفير وكلمات المرور، وأمن الـ<span class="en">DBMS</span> نفسه (لكل مستخدم حساب وصلاحيات يتحقّق منها النظام).
+        </div>
+
+        <h3>2. Privileges — الصلاحيات (GRANT / REVOKE)</h3>
+        <p>SQL controls access with privileges: <span class="en-term">SELECT</span>, <span class="en-term">INSERT</span>, <span class="en-term">UPDATE</span>, <span class="en-term">DELETE</span>. The <strong>owner</strong> (creator) of an object has all privileges and can grant them to others. This enforces the <span class="en-term">principle of least privilege</span> — users get only what their role needs.</p>
+        <pre>GRANT SELECT, INSERT ON employees TO Ali;     -- give privileges
+REVOKE SELECT, INSERT ON employees FROM Ali;  -- take them back</pre>
+        <div class="callout note">
+          <div class="label">📌 Revoke behaviour</div>
+          If a user got the same privilege from <strong>several</strong> grantors, everyone must revoke before it’s gone. Also, all privileges <strong>dependent</strong> on a revoked one are revoked too (cascading).
+        </div>
+
+        <h3>3. Views (Virtual Tables) — الرؤى</h3>
+        <p>Privileges work at the <strong>table</strong> level: you can restrict by column, but <strong>not by row</strong>. <span class="en-term">Views</span> solve this. A view is a <strong>derived/virtual table</strong> = the result of a stored <code>SELECT</code>, treated like a table. Its value depends on the base tables (changes propagate both ways).</p>
+        <pre>CREATE VIEW vw_emp_dept AS
+SELECT e.emp_id, e.name, d.dept_name, e.salary
+FROM   Employees e JOIN Departments d ON e.dept_id = d.dept_id;</pre>
+        <div class="callout def">
+          <div class="label">📘 View updatability</div>
+          <strong>Updatable</strong> when defined on a <strong>single</strong> table and containing a primary/candidate key. <strong>Not updatable</strong> when defined over <strong>multiple</strong> tables via a join, or containing <strong>aggregates / GROUP BY</strong>.
+        </div>
+        <div class="callout note">
+          <div class="label">⭐ Views + privileges (customized access)</div>
+          To restrict someone’s access to a table: (1) <strong>create a view</strong> showing only what they need, (2) <strong>grant</strong> privileges on the <em>view</em>, (3) <strong>revoke</strong> their privileges on the underlying table.
+        </div>
+        <div class="ar">
+          الصلاحيات تشتغل على مستوى <b>الجدول</b> (ممكن نقيّد بالأعمدة لكن ليس بالصفوف). الحل هو الـ<span class="en">View</span>: جدول <b>افتراضي</b> ناتج من <span class="en">SELECT</span> مخزّن. يمكن تحديث الرؤية إذا كانت على <b>جدول واحد</b> وتحتوي مفتاحًا، ولا يمكن تحديثها إذا كانت على عدة جداول أو فيها <span class="en">aggregate/GROUP BY</span>. لتخصيص الوصول: ننشئ <span class="en">view</span> + نمنح صلاحيات عليها + نسحب الصلاحيات عن الجدول الأصلي.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 11 Summary — الخلاصة</div>
+          Security spans legal, physical, OS/network, policy, encryption, and DBMS layers. SQL <strong>privileges</strong> (SELECT/INSERT/UPDATE/DELETE) are managed with <code>GRANT</code>/<code>REVOKE</code> (revokes cascade). <strong>Views</strong> are virtual tables that enable <strong>row-level</strong> customized access; combine views + privileges to restrict users. Single-table views with a key are updatable; multi-table/aggregate views are not.
+        </div>
+      </section>
+      <!-- ====================  CHAPTER 12  ========================== -->
+      <section class="chapter" id="ch12">
+        <div class="ch-head">
+          <div class="kicker">Unit 12 · Storage &amp; Security</div>
+          <h2>File Organization</h2>
+          <div class="ref">Textbook: Chapter 16 · Slides (Week 13)</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Lecture Outline</div>
+          File organization vs access method · Unordered (Heap) files · Ordered (Sequential) files · Hashed files · Collision resolution · Dynamic &amp; Extendible hashing.
+        </div>
+
+        <h3>1. Concepts — مفاهيم</h3>
+        <p><span class="en-term">File organization</span> = how physical records are arranged on disk. <span class="en-term">Access method</span> = how data is retrieved given that organization. We compare three types by their <strong>insert</strong> and <strong>search</strong> costs.</p>
+
+        <table>
+          <tr><th>Type</th><th>Insert</th><th>Search</th><th>Ordered read</th></tr>
+          <tr><td><span class="en-term">Unordered (Heap)</span></td><td><strong>Fast</strong> — appended at end.</td><td><strong>Slow</strong> — linear search, read each block.</td><td>Needs sorting first.</td></tr>
+          <tr><td><span class="en-term">Ordered (Sequential)</span></td><td><strong>Expensive</strong> — must keep order; ~half the file moved.</td><td><strong>Fast</strong> on the ordering field — <strong>binary search</strong> (log₂ b).</td><td><strong>Very efficient</strong> — already sorted.</td></tr>
+          <tr><td><span class="en-term">Hashed</span></td><td>Fast (compute bucket).</td><td><strong>Very fast</strong> on the hash key (direct).</td><td><strong>Inefficient</strong> — order not preserved.</td></tr>
+        </table>
+        <div class="ar">
+          <b>تنظيم الملف</b> = كيف تُرتَّب السجلات على القرص. <b>Heap</b>: الإدخال سريع (بالنهاية) لكن البحث بطيء (خطّي). <b>Sequential</b> (مرتّب): البحث سريع بالبحث الثنائي <span class="en">log₂ b</span> لكن الإدخال مكلف. <b>Hash</b>: البحث سريع جدًا على مفتاح التجزئة لكن القراءة المرتّبة غير فعّالة.
+        </div>
+
+        <h3>2. Ordered Files &amp; Binary Search</h3>
+        <p>Records are physically sorted on an <span class="en-term">ordering field</span> (if it’s a key, it’s the <span class="en-term">ordering key</span>). Binary search needs only ~<code>log₂(n)</code> block reads instead of a linear scan. The cost is insertion: about <strong>half</strong> the blocks must be read/rewritten to make room.</p>
+
+        <h3>3. Hashed Files — ملفات التجزئة</h3>
+        <p>Disk hashing = <span class="en-term">external hashing</span>. Blocks are divided into <strong>M buckets</strong>; a record with key K goes to bucket <code>i = h(K)</code>. Common function: <code>h(K) = K mod M</code>.</p>
+        <div class="callout def">
+          <div class="label">📘 Collisions</div>
+          A <span class="en-term">collision</span> occurs when records hash to the same bucket. Resolution methods:
+          <ul>
+            <li><span class="en-term">Open addressing</span> — probe the next free position in order (e.g. linear probing).</li>
+            <li><span class="en-term">Chaining</span> — keep overflow locations; add a <strong>pointer</strong> from the full bucket to the overflow record.</li>
+          </ul>
+          Keep a hash file <strong>70–80% full</strong>: higher load → more collisions; lower → wasted space. h should distribute uniformly.
+        </div>
+        <p><strong>Drawbacks of static hashing:</strong> the fixed M is a problem as the file grows/shrinks, and ordered access is inefficient.</p>
+
+        <h4>Dynamic &amp; Extendible Hashing</h4>
+        <p>These allow the number of buckets to grow/shrink. Both use the <strong>binary representation</strong> of <code>h(K)</code> to index a directory: in <span class="en-term">dynamic hashing</span> the directory is a <strong>binary tree</strong>; in <span class="en-term">extendible hashing</span> it’s an <strong>array of size 2^d</strong> (d = global depth). When a block fills, it <strong>splits</strong> and the directory expands — greatly reducing the need for a separate overflow area.</p>
+        <div class="ar">
+          التجزئة على القرص اسمها <span class="en">external hashing</span>: السجل يروح للدلو <span class="en">bucket</span> رقم <span class="en">h(K)=K mod M</span>. <b>التصادم</b> <span class="en">collision</span> يُحلّ بـ<span class="en">open addressing</span> (نبحث عن موقع فاضي) أو <span class="en">chaining</span> (مؤشّر لموقع فائض). نُبقي الملف ٧٠–٨٠٪ ممتلئًا. <b>التجزئة الديناميكية والقابلة للتوسّع</b> تسمح بنمو الدلاء عبر دليل (شجرة ثنائية / مصفوفة بحجم <span class="en">2^d</span>) وتقسيم الكتل الممتلئة.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 12 Summary — الخلاصة</div>
+          <strong>Heap</strong> files: fast insert, slow (linear) search. <strong>Ordered</strong> files: binary search (log₂ b) but costly inserts. <strong>Hashed</strong> files: near-instant key lookup via <code>h(K)=K mod M</code>, collisions handled by open addressing or chaining, kept 70–80% full; static hashing’s fixed M motivates <strong>dynamic/extendible</strong> hashing with a splitting directory.
+        </div>
+      </section>
+      <!-- ====================  CHAPTER 13  ========================== -->
+      <section class="chapter" id="ch13">
+        <div class="ch-head">
+          <div class="kicker">Unit 13 · Storage &amp; Security</div>
+          <h2>Indexing &amp; Physical Database Design</h2>
+          <div class="ref">Textbook: Chapter 17 · Slides (Week 14) + Notes (Week 15)</div>
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎯 Lecture Outline</div>
+          What is an index · Single-level: Primary, Clustering, Secondary · Dense vs Sparse · Blocking factor calculations · Multilevel indexes (B-/B+-trees).
+        </div>
+
+        <h3>1. What is an Index? — ما هو الفهرس؟</h3>
+        <p>An <span class="en-term">index</span> is an additional on-disk file (data structure) that provides a <strong>secondary access path</strong> to quickly locate records, <strong>without</strong> changing the physical placement of the data file. It’s a file of <code>&lt;field value, pointer&gt;</code> entries ordered by field value (an <strong>access path</strong>). Index files are much smaller than data files, so binary search on the index is fast.</p>
+
+        <h3>2. Single-Level Ordered Indexes — الفهارس أحادية المستوى</h3>
+        <table>
+          <tr><th>Type</th><th>Defined on</th><th>Dense/Sparse</th><th>How many</th></tr>
+          <tr><td><span class="en-term">Primary</span></td><td>Ordered file, on the <strong>ordering KEY</strong> field. One entry per <strong>block</strong> (the block anchor).</td><td><strong>Sparse</strong> (non-dense)</td><td>At most one</td></tr>
+          <tr><td><span class="en-term">Clustering</span></td><td>Ordered file, on a <strong>non-key</strong> ordering field. One entry per <strong>distinct value</strong>.</td><td>Sparse</td><td>At most one</td></tr>
+          <tr><td><span class="en-term">Secondary</span></td><td><strong>Any non-ordering</strong> field (data file unordered on it). One entry per <strong>record</strong>.</td><td><strong>Dense</strong></td><td>Many allowed</td></tr>
+        </table>
+        <div class="callout def">
+          <div class="label">📘 Dense vs Sparse · key rules</div>
+          <strong>Dense:</strong> one entry for <strong>every</strong> record. <strong>Sparse:</strong> entries for only <strong>some</strong> values (e.g. block anchors). A file has at most <strong>one</strong> physical ordering field → at most one primary <strong>or</strong> one clustering index (not both), but <strong>many</strong> secondary indexes. Secondary indexes must be dense (data isn’t ordered, so no block anchors).
+        </div>
+
+        <h3>3. Blocking Factor &amp; Access Cost — معامل التجميع</h3>
+        <div class="callout def">
+          <div class="label">📘 Formulas</div>
+          <code>Blocking factor Bfr = Block size B ÷ Record size R</code> (records per block).<br>
+          <code>Number of blocks b = ⌈ r ÷ Bfr ⌉</code>; binary search ≈ <code>⌈log₂ b⌉</code> block accesses; linear search ≈ <code>b/2</code>.
+        </div>
+        <pre>-- Data file: R=100, B=1024, r=30000
+Bfr = 1024 / 100 = 10 records/block
+b   = 30000 / 10 = 3000 blocks
+binary search = log2(3000) ≈ 12 accesses
+
+-- Primary index on SSN: V=9, pointer P=6
+RI  = 9 + 6 = 15 bytes/entry
+BfrI= 1024 / 15 = 68 entries/block
+b   = 3000 / 68 ≈ 45 index blocks
+search = log2(45) ≈ 6 + 1 = 7 accesses   (vs 1500 linear, 12 ordered)</pre>
+        <p>A <strong>dense secondary index</strong> on the same file has 30000 entries → <code>30000/68 ≈ 442</code> blocks → <code>log₂(442)+1 ≈ 10</code> accesses (better than 1500 linear, worse than the primary index’s 7, because the data file isn’t ordered on that field).</p>
+
+        <h3>4. Multilevel Indexes — الفهارس متعددة المستويات</h3>
+        <p>Since a single-level index is itself an ordered file, we can build a <strong>primary index on the index</strong> — the first-level index, then a second level, a third, … until the top level fits in <strong>one block</strong>. The fan-out (<span class="en-term">fo</span>) = the index blocking factor, so the search cost drops to <code>log_fo(b)</code>. Total record access = <code>(number of levels t) + 1</code>.</p>
+        <pre>-- Continuing the secondary index (fo = 68, b1 = 442):
+b2 = 442 / 68 = 7
+b3 = 7 / 68   = 1   ← top level
+levels t = 3  →  total accesses = t + 1 = 4</pre>
+        <p>The downside: every level is an ordered file, so <strong>insertion/deletion is hard</strong> → solved by <strong>dynamic multilevel indexes using B-trees and B⁺-trees</strong> (balanced tree structures). Other index types: <span class="en-term">hash index</span> (fast exact-match, poor for ranges) and <span class="en-term">composite / multiple-key index</span> (on several columns).</p>
+        <div class="ar">
+          <b>الفهرس</b> ملف إضافي يوفّر <b>مسار وصول ثانوي</b> دون تغيير ترتيب البيانات. ثلاثة أنواع أحادية: <b>Primary</b> (على مفتاح الترتيب، <span class="en">sparse</span>)، <b>Clustering</b> (على حقل ترتيب غير مفتاح)، <b>Secondary</b> (على أي حقل غير مرتَّب، <span class="en">dense</span>، ويمكن تعدّده). الملف له فهرس <b>primary أو clustering</b> واحد فقط، لكن <b>secondary</b> متعدّد. معامل التجميع <span class="en">Bfr = B/R</span>، وعدد الكتل <span class="en">b = r/Bfr</span>، والبحث الثنائي <span class="en">log₂ b</span>. الفهارس <b>متعددة المستويات</b> تبني فهرسًا على الفهرس وتقلّل التكلفة إلى <span class="en">log_fo(b)</span>، وتُنفَّذ بـ<span class="en">B/B⁺-Trees</span>.
+        </div>
+
+        <div class="callout exam">
+          <div class="label">📝 Exam Tips</div>
+          Primary &amp; clustering = on the <strong>ordering</strong> field = <strong>sparse</strong>, at most one each. Secondary = on a <strong>non-ordering</strong> field = <strong>dense</strong>, many allowed. Know the formulas: <code>Bfr=B/R</code>, <code>b=r/Bfr</code>, binary search = <code>log₂ b</code>, multilevel = <code>t+1</code> accesses.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🧾 Chapter 13 Summary — الخلاصة</div>
+          Indexes are extra <code>&lt;value, pointer&gt;</code> files giving fast secondary access. <strong>Primary</strong> (sparse, ordering key) and <strong>clustering</strong> (sparse, non-key ordering) — one each; <strong>secondary</strong> (dense, any field) — many. Compute cost via <code>Bfr=B/R</code>, <code>b=r/Bfr</code>, binary search <code>log₂ b</code>. <strong>Multilevel</strong> indexes (B/B⁺-trees) reduce search to <code>log_fo(b)</code> and access to <code>t+1</code> blocks.
+        </div>
+      </section>
+
+<!-- ====================  APPENDIX  ============================ -->
+      <section class="chapter" id="appendix">
+        <div class="ch-head">
+          <div class="kicker">Reference · مراجع</div>
+          <h2>SQL Cheat Sheet &amp; Self-Tests</h2>
+          <div class="ref">Comprehensive SQL command reference + practice questions with answers</div>
+        </div>
+
+        <h3>1. SQL Command Reference — مرجع أوامر SQL</h3>
+        <h4>DML / DDL / DCL / TCL</h4>
+        <table>
+          <tr><th>Category</th><th>Commands</th></tr>
+          <tr><td><span class="en-term">DML</span> (data manipulation)</td><td>SELECT, INSERT, UPDATE, DELETE</td></tr>
+          <tr><td><span class="en-term">DDL</span> (data definition)</td><td>CREATE, ALTER, DROP, <strong>TRUNCATE</strong> (delete data, keep table)</td></tr>
+          <tr><td><span class="en-term">DCL</span> (data control)</td><td>GRANT, REVOKE</td></tr>
+          <tr><td><span class="en-term">TCL</span> (transaction control)</td><td>COMMIT, ROLLBACK, SAVEPOINT, ROLLBACK TO SAVEPOINT, SET TRANSACTION</td></tr>
+        </table>
+        <pre>-- Querying
+SELECT col1, col2 FROM t WHERE cond ORDER BY col ASC|DESC;
+SELECT col, COUNT(*) FROM t GROUP BY col HAVING COUNT(*) > 5;
+
+-- Joins
+SELECT * FROM a INNER JOIN b ON a.x=b.x;     -- only matches
+SELECT * FROM a LEFT  JOIN b ON a.x=b.x;     -- all of a (+NULLs)
+SELECT * FROM a RIGHT JOIN b ON a.x=b.x;     -- all of b (+NULLs)
+SELECT * FROM a CROSS JOIN b;                -- Cartesian product
+SELECT * FROM a NATURAL JOIN b;              -- auto same-name cols
+
+-- Subqueries
+SELECT * FROM t WHERE v IN  (subquery);
+SELECT * FROM t WHERE v < ANY (subquery);
+SELECT * FROM t WHERE v > ALL (subquery);
+
+-- Set ops
+SELECT ... UNION / INTERSECT / EXCEPT SELECT ...;</pre>
+
+        <h4>Aggregate / String / Date / Conditional</h4>
+        <ul>
+          <li><strong>Aggregate:</strong> COUNT(), SUM(), AVG(), MIN(), MAX().</li>
+          <li><strong>String:</strong> CONCAT(), SUBSTRING(), CHAR_LENGTH(), UPPER(), LOWER(), TRIM(), LEFT(), RIGHT(), REPLACE().</li>
+          <li><strong>Date/Time:</strong> CURRENT_DATE(), CURRENT_TIMESTAMP(), EXTRACT(part FROM date), DATE_ADD()/DATE_SUB(), DATEDIFF(), TO_CHAR().</li>
+          <li><strong>Conditional:</strong> <code>CASE WHEN … THEN … ELSE … END</code>, IF(), COALESCE() (first non-null), NULLIF().</li>
+        </ul>
+        <pre>CREATE VIEW vw AS SELECT ...;                      -- view
+CREATE FUNCTION calc_tax(s DECIMAL) RETURNS DECIMAL ... RETURN s*0.12;
+CREATE PROCEDURE raise_salary(IN d INT, IN pct DECIMAL) ...;
+CREATE TRIGGER trg AFTER UPDATE ON Employees FOR EACH ROW ...;</pre>
+
+        <h3>2. Self-Test — Relational Algebra, Joins &amp; Normalization</h3>
+        <div class="callout exam">
+          <div class="label">📝 Questions</div>
+          <ol>
+            <li>Which expression returns only <em>make</em> and a calculated <em>year+1</em> from Car(id, make, year)?</li>
+            <li>Write RA to return Car rows where year = 2015.</li>
+            <li>Before <code>R ∪ S</code>, what must be done and why?</li>
+            <li>Difference between σ (SELECT) and π (PROJECT)?</li>
+            <li>A LEFT OUTER JOIN of Customers &amp; Stores on city — how many rows, and why?</li>
+            <li>Conceptual difference between <code>IN</code> and <code>EXISTS</code>?</li>
+            <li>Two mandatory conditions for 3NF?</li>
+            <li>Course(course_id, instructor, phone) with course_id→instructor, instructor→phone: why not 3NF, and decompose it.</li>
+            <li>Structural difference between 3NF and BCNF?</li>
+          </ol>
+        </div>
+        <div class="callout def">
+          <div class="label">✅ Answers</div>
+          <ol>
+            <li><strong>π</strong>(make, year+1)(Car) — projection selects columns &amp; applies the transformation.</li>
+            <li><strong>σ</strong>(year=2015)(Car) — selection filters rows.</li>
+            <li><strong>Rename S’s attributes to match R</strong> (e.g. ρ). UNION requires <strong>union compatibility</strong>: same number of attributes, compatible types, matching names.</li>
+            <li>σ filters <strong>rows</strong> (horizontal) by a condition; π selects <strong>columns</strong> (vertical) and removes duplicates.</li>
+            <li><strong>8 rows</strong> — 6 inner-join matches + 2 unmatched left rows (Bob, Emily) padded with NULL.</li>
+            <li><code>IN</code> checks if a value matches any value in the result set; <code>EXISTS</code> checks if the (correlated) subquery returns <strong>at least one row</strong> and can stop at the first match.</li>
+            <li>(1) Must be in <strong>2NF</strong>; (2) <strong>no transitive dependency</strong> (no non-key depends on another non-key).</li>
+            <li>Transitive dependency: phone depends on <em>instructor</em> (non-key), not directly on course_id → decompose into <strong>Course(course_id, instructor)</strong> and <strong>Instructor(instructor, phone)</strong>.</li>
+            <li>3NF allows a non-prime attribute to depend on a superkey but forbids non-key→non-key; <strong>BCNF</strong> is stricter: <strong>every determinant must be a candidate key</strong>.</li>
+          </ol>
+        </div>
+
+        <h3>3. Self-Test — SQL (Set ops, Aggregation, Joins, Subqueries)</h3>
+        <div class="callout exam">
+          <div class="label">📝 Key MCQs &amp; queries</div>
+          <ul>
+            <li>Operator returning rows in <strong>both</strong> sets (no duplicates) → <strong>INTERSECT</strong>.</li>
+            <li>Use <strong>HAVING</strong> (not WHERE) to filter on an <strong>aggregated value</strong>.</li>
+            <li><strong>NATURAL JOIN</strong> auto-joins on all same-named columns → risk of unintended matches.</li>
+            <li><strong>LEFT OUTER JOIN</strong> → all left rows, NULLs for unmatched right columns.</li>
+            <li><strong>EXISTS</strong> is TRUE when the subquery returns ≥ 1 row; a <strong>correlated</strong> subquery references the outer row and runs once per outer row.</li>
+          </ul>
+          <pre>-- Avg salary per dept, ≥3 employees and avg > 60000
+SELECT dept_id, AVG(salary) AS avg_sal FROM Employees
+GROUP BY dept_id HAVING COUNT(emp_id) >= 3 AND AVG(salary) > 60000;
+
+-- Employees above company average (non-correlated subquery)
+SELECT name, salary FROM Employees
+WHERE salary > (SELECT AVG(salary) FROM Employees);
+
+-- Departments with an employee earning > 80000 (EXISTS)
+SELECT d.dept_name FROM Departments d
+WHERE EXISTS (SELECT 1 FROM Employees e
+              WHERE e.dept_id=d.dept_id AND e.salary>80000);</pre>
+        </div>
+        <div class="callout warn">
+          <div class="label">⚠️ Classic debugging trap</div>
+          <code>WHERE COUNT(emp_id) &gt; 2</code> is <strong>wrong</strong> — WHERE can’t filter aggregates. Use <code>HAVING</code> <em>after</em> <code>GROUP BY</code>:
+          <pre>SELECT dept_id, COUNT(emp_id) AS total_emp
+FROM Employees
+GROUP BY dept_id
+HAVING COUNT(emp_id) > 2;</pre>
+          Common pitfalls: WHERE-vs-HAVING on aggregates · UNION (removes dups) vs UNION ALL · GROUP BY placement · forgetting <code>FOR EACH ROW</code> in triggers · assuming NATURAL JOIN is safe.
+        </div>
+
+        <div class="callout note">
+          <div class="label">🎓 You’ve reached the end — بالتوفيق!</div>
+          That’s the complete CIS 235 course: foundations → conceptual design (ER/EER) → relational model &amp; mapping → SQL &amp; relational algebra → normalization → security → storage &amp; indexing. Use the search box to jump to any topic while revising. حظًا موفقًا في الاختبار!
+        </div>
+      </section>
+      <!-- =================  END OF ALL CHAPTERS  =================== -->
+
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var links    = Array.prototype.slice.call(document.querySelectorAll('.nav a'));
+      var chapters = Array.prototype.slice.call(document.querySelectorAll('.chapter'));
+      var crumb    = document.getElementById('crumbCh');
+      var sidebar  = document.getElementById('sidebar');
+
+      function show(id) {
+        chapters.forEach(function (c) { c.classList.toggle('active', c.id === id); });
+        links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('data-target') === id); });
+        var sec = document.getElementById(id);
+        if (sec) {
+          var h = sec.querySelector('h2');
+          if (h && crumb) crumb.textContent = h.textContent;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        sidebar.classList.remove('open');
+      }
+
+      links.forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          show(a.getAttribute('data-target'));
+        });
+      });
+
+      // Sidebar search filter (matches link text + group labels stay visible)
+      var search = document.getElementById('navSearch');
+      if (search) {
+        search.addEventListener('input', function () {
+          var q = search.value.trim().toLowerCase();
+          links.forEach(function (a) {
+            a.style.display = a.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+          });
+        });
+      }
+
+      // Light / dark theme toggle
+      var themeBtn = document.getElementById('themeBtn');
+      if (themeBtn) {
+        themeBtn.addEventListener('click', function () {
+          var html = document.documentElement;
+          var isDark = html.getAttribute('data-theme') === 'dark';
+          html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+          themeBtn.textContent = isDark ? '🌙 Theme' : '☀️ Theme';
+        });
+      }
+
+      // Mobile menu
+      var menuToggle = document.getElementById('menuToggle');
+      if (menuToggle) {
+        menuToggle.addEventListener('click', function () { sidebar.classList.toggle('open'); });
+      }
+
+      // Start on Chapter 1
+      show('ch1');
+    })();
+  </script>
+</body>
+</html>
+
